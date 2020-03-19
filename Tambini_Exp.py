@@ -32,7 +32,7 @@ os.chdir(_thisDir)
 
 # Store info about the experiment session
 psychopyVersion = '3.2.4'
-expName = 'Final_build'  # from the Builder filename that created this script
+expName = 'PsychoPy_Ehlert_1.2'  # from the Builder filename that created this script
 expInfo = {'participant': '', 'session': '001'}
 dlg = gui.DlgFromDict(dictionary=expInfo, sortKeys=False, title=expName)
 if dlg.OK == False:
@@ -84,23 +84,33 @@ else:
 # create a default keyboard (e.g. to check for escape)
 defaultKeyboard = keyboard.Keyboard()
 
-#set random stim locations 
+#create matrix 
+data_matrix = np.zeros( (18, 3) )
+
+#create lists to hold stim locations
 coord_x_list = []
 coord_y_list = []
+#set flags to true 
 coordFlag=True
+#ranFlag=True
 
 # set up handler to look after randomisation of conditions etc
 #change nReps here to effect overall rounds of data testing
-rounds = data.TrialHandler(nReps=2, method='sequential', 
+nRound=1
+rounds = data.TrialHandler(nReps=99999, method='sequential', 
     extraInfo=expInfo, originPath=-1,
     trialList=[None],
     seed=None, name='rounds')
-#thisExp.addLoop(rounds)  # add the loop to the experiment
+thisExp.addLoop(rounds)  # add the loop to the experiment
+#create matrix to save data
+
+
 thisRound = rounds.trialList[0]  # so we can initialise stimuli with some values
 # abbreviate parameter names if possible (e.g. rgb = thisRound.rgb)
 if thisRound != None:
     for paramName in thisRound:
         exec('{} = thisRound[paramName]'.format(paramName))
+   
 
 for thisRound in rounds:
     currentLoop = rounds
@@ -109,15 +119,15 @@ for thisRound in rounds:
         for paramName in thisRound:
             exec('{} = thisRound[paramName]'.format(paramName))
 
-    thisRound = 1
     delay=30
+
     # Initialize components for Routine "Train_Intro"
-    stim_size=((width/11),(width/11))
-    outline_size=((width/11)+5,(width/11)+5)
+    stim_size=(234,234)
+    outline_size=(238,238)
     letter_size=(height/40)
     Train_IntroClock = core.Clock()
     Training_instructions_2 = visual.TextStim(win=win, name='Training_instructions_2',
-        text='LEARNING BLOCK\n\n\n\n\nYou will view a series of objects.\n\nEach object will move to a specific location on the grid.cA red frame will appear when each object reaches its location.\n\nYour goal is to learn the specific location of each object on the grid.\n\nAfter the red frame turns black, you should click on the object to end the trial.\n\n\n\nPlease press the space bar to proceed.....\n',
+        text='LEARNING BLOCK\n\n\n\n\nYou will view a series of objects.\n\nEach object will move to a specific location on the grid. A red frame will appear when each object reaches its location.\n\nYour goal is to learn the specific location of each object on the grid.\n\nAfter the red frame turns black, you should click on the object to end the trial.\n\n\n\nPlease press the space bar to proceed.....\n',
         font='Arial',
         pos=(0, 0), height=letter_size, wrapWidth=None, ori=0, 
         color='white', colorSpace='rgb', opacity=1, 
@@ -340,7 +350,7 @@ for thisRound in rounds:
         extraInfo=expInfo, originPath=-1,
         trialList=data.importConditions('Trials.xlsx'),
         seed=None, name='training')
-    thisExp.addLoop(training)  # add the loop to the experiment
+    thisExp.addLoop(rounds)  # add the loop to the experiment
     thisTrial = training.trialList[0]  # so we can initialize stimuli with some values
     runs=len(training.trialList)
     looper=0
@@ -350,12 +360,19 @@ for thisRound in rounds:
         for paramName in thisTrial:
             exec('{} = thisTrial[paramName]'.format(paramName))
     #on first run creates random locations for stims      
+   
     if coordFlag == True:
+        looper=0
         for i in training.trialList:
             coord_x_list.append(randint((-(width/2)+(width/11)),((width/2)-(width/11))))
+            data_matrix[looper][1]=coord_x_list[looper]
             coord_y_list.append(randint((-(height/2)+(width/11)),((height/2))-(width/11)))
+            data_matrix[looper][2]=coord_y_list[looper]
+            data_matrix[looper][0]=stim
+            looper=looper+1
         coordFlag = False
-    
+        looper=0
+        
     for thisTrial in training:
         currentLoop = training
         # abbreviate parameter names if possible (e.g. rgb = thisTrial.rgb)
@@ -369,6 +386,9 @@ for thisRound in rounds:
         Stimuli_2.setImage('/Users/lehlert/Documents/PsychoPy/Tambini_2/Files/stimuli/objects_pract/1.jpg')
         #declare necessary variables and flags
         #function that creates grid over screen based upon resolution input
+        #add x and y locations 
+        #training.addData('xCoord', coord_x_list[looper])
+        #training.addData('yCoord', coord_y_list[looper])
         gridList = [] 
         def create_grid(list):
             
@@ -388,14 +408,12 @@ for thisRound in rounds:
                 line.lineWidth = 10
                 line.setAutoDraw(True)
         
-        training.addData('order', looper+1)
-        training.addData('xCoord', coord_x_list[looper])
-        training.addData('yCoord', coord_y_list[looper])
+        #training.addData('order_'+str(nRound), looper+1)
         
         #using the fuction to create the grid
         create_grid(gridList)
         #set the stim image from the directroy each loop
-        Stimuli_2.setImage(stim)
+        Stimuli_2.setImage(str(stim)+'a.jpg')
     
         #make the mouse invisible
         win.mouseVisible = 0
@@ -407,7 +425,7 @@ for thisRound in rounds:
         yPos=0
         Stimuli_2.setPos((xPos,yPos))
         #set the movement rates for the Stimuli image
-        #rate comes from the excel sheet, this is the number of frames it takes for the image to reach its final destination
+        #rate comes from the excel sheet, this he number of frames it takes for the image to reach its final destination
         xMov=(coord_x_list[looper]/expInfo['frameRate'])
         yMov=(coord_y_list[looper]/expInfo['frameRate'])
         
@@ -610,13 +628,16 @@ for thisRound in rounds:
         # the Routine "Training" was not non-slip safe, so reset the non-slip timer
         looper=looper+1
         routineTimer.reset()
-        thisExp.nextEntry()
         
     #save training data
-    filename = _thisDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+ '%_training_'+ str(thisRound)
-    training.saveAsExcel(filename, appendFile=False, fileCollisionMethod='rename')
+    #training.next()
+    #filename = _thisDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+ '_training'+ str(nRound)
+    #training.saveAsWideText(filename, appendFile=True, fileCollisionMethod='rename')
+    #filename='pickle'
+    #training.saveAsPickle(filename)
     
     # completed 1 repeats of 'training'
+    
     
     
     # ------Prepare to start Routine "Test_Intro"-------
@@ -726,7 +747,7 @@ for thisRound in rounds:
         extraInfo=expInfo, originPath=-1,
         trialList=data.importConditions('Trials.xlsx'),
         seed=None, name='testing')
-    thisExp.addLoop(testing)  # add the loop to the experiment
+    thisExp.addLoop(rounds)  # add the loop to the experiment
     thisTest = testing.trialList[0]  # so we can initialise stimuli with some values
     # abbreviate parameter names if possible (e.g. rgb = thisTest.rgb)
     if thisTest != None:
@@ -750,8 +771,8 @@ for thisRound in rounds:
         Stimuli.setImage('/Users/lehlert/Documents/PsychoPy/Tambini_2/Files/stimuli/objects/1a.jpg')
         xCoord = []
         yCoord = []
-        stimPos = []
-        targetPos =[]
+        #stimPos = []
+        #targetPos =[]
         order = []
         delay=30
         doneFlag=0
@@ -784,7 +805,7 @@ for thisRound in rounds:
         #declare necessary variables and flags
         create_grid(gridList)
         Stimuli.opacity = 1
-        Stimuli.setImage(stim)
+        Stimuli.setImage(str(stim)+'a.jpg')
         xPos=0
         yPos=0
         Stimuli.setPos((xPos,yPos))
@@ -971,8 +992,8 @@ for thisRound in rounds:
                     Outline_blue.opacity = 1
                     dist=[]
                     dist=np.linalg.norm(Stimuli.pos-Target.pos)
-                    testing.addData('stimPos', Stimuli.pos)
-                    testing.addData('targetPos', Target.pos)
+                    #testing.addData('stimPos', Stimuli.pos)
+                    #testing.addData('targetPos', Target.pos)
                     if Stimuli.overlaps(Target):
                         Outline_green.pos = Stimuli.pos
                         Outline_green.opacity = 1
@@ -1098,32 +1119,31 @@ for thisRound in rounds:
             textRight.setAutoDraw(False)
             textWrong.setAutoDraw(False)
         myLine.setAutoDraw(False)
-        
     
         # the Routine "Testing" was not non-slip safe, so reset the non-slip timer
         routineTimer.reset()
         #if looper==runs-1:
         #    nextFlag=False
-        #if nextFlag==True:
-        thisExp.nextEntry()
-        
+        #if nextFlag==True
         looper=looper+1
         
-    #saving testing data
-    filename = _thisDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+'_testing_'+ str(thisRound)
-    testing.saveAsExcel(filename,appendFile=False, fileCollisionMethod='rename')
+
+    #filename = _thisDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+'_testing_'+ str(nRound)
+    #testing.saveAsWideText(filename, appendFile=False, fileCollisionMethod='rename')
+    #filename='pickle'
+    #testing.saveAsPickle(filename)
     
     # completed 1 repeats of 'testing'
-    thisRound = thisRound+1
-            
+    nRound = nRound+1       
 # completed 2 repeats of 'rounds'
         
 # Flip one final time so any remaining win.callOnFlip() 
 # and win.timeOnFlip() tasks get executed before quitting
 win.flip()
 
+#thisExp.nextEntry()
 # these shouldn't be strictly necessary (should auto-save)
-
+filename = _thisDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+'final'
 thisExp.saveAsWideText(filename)
 thisExp.saveAsPickle(filename)
 logging.flush()
