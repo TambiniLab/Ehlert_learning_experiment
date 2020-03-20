@@ -19,9 +19,15 @@ from psychopy.constants import (NOT_STARTED, STARTED, PLAYING, PAUSED,
 import numpy as np  # whole numpy lib is available, prepend 'np.'
 from numpy import (sin, cos, tan, linalg, log, log10, pi, average,
                    sqrt, std, deg2rad, rad2deg, linspace, asarray)
-from numpy.random import random, randint, normal, shuffle
+from numpy.random import random, randint, normal, shuffle, sample
+
+# import random  
+import random
+from random import sample 
+
 import os  # handy system and path functions
 import sys  # to get file system encoding
+
 
 from psychopy.hardware import keyboard
 
@@ -85,7 +91,10 @@ else:
 defaultKeyboard = keyboard.Keyboard()
 
 #create matrix 
-data_matrix = np.zeros( (18, 3) )
+rows=18
+cols=3
+currentCol=3
+data_matrix = np.zeros( (rows, cols) )
 
 #create lists to hold stim locations
 coord_x_list = []
@@ -97,7 +106,7 @@ coordFlag=True
 # set up handler to look after randomisation of conditions etc
 #change nReps here to effect overall rounds of data testing
 nRound=1
-rounds = data.TrialHandler(nReps=99999, method='sequential', 
+rounds = data.TrialHandler(nReps=1, method='sequential', 
     extraInfo=expInfo, originPath=-1,
     trialList=[None],
     seed=None, name='rounds')
@@ -346,33 +355,64 @@ for thisRound in rounds:
     routineTimer.reset()
     
     # set up handler to look after randomisation of conditions etc
-    training = data.TrialHandler(nReps=1, method='sequential', 
+    training = data.TrialHandler(nReps=18, method='sequential', 
         extraInfo=expInfo, originPath=-1,
-        trialList=data.importConditions('Trials.xlsx'),
+        trialList=[None],
         seed=None, name='training')
     thisExp.addLoop(rounds)  # add the loop to the experiment
     thisTrial = training.trialList[0]  # so we can initialize stimuli with some values
-    runs=len(training.trialList)
+    #number of runs 
+    runs=18
+    #used as index for arrays and matrixes while keeping track of runs
     looper=0
+    
+    #generate random order for each run through of training 
+    random.seed()
+    order_list=random.sample(range(0, 18), 18)
     
     # abbreviate parameter names if possible (e.g. rgb = thisTrial.rgb)
     if thisTrial != None:
         for paramName in thisTrial:
             exec('{} = thisTrial[paramName]'.format(paramName))
-    #on first run creates random locations for stims      
-   
+       
+    
+    #set up initial matrix 
     if coordFlag == True:
         looper=0
-        for i in training.trialList:
+        #on first run creates random locations for stims  
+        #generate list of stims to use
+        randStim=random.sample(range(1, 266), 18)
+        while looper < 18:
+            random.seed()
             coord_x_list.append(randint((-(width/2)+(width/11)),((width/2)-(width/11))))
+            #make stim a random integer between 1 and 266
+            #use sample so no duplicates
+            data_matrix[looper][0]=randStim[looper]
+            #no need for this checking since we are using sample
+            #tmp=looper
+            #make sure that the random # has not been used previously 
+            #while looper>=0:
+               # if randStim==data_matrix[looper][1]:
+                   # randStim=randint(1,266)
+                  #  data_matrix[tmp][0]=randStim
+                  #  looper=tmp
+             #   looper=looper-1
+            #looper=tmp
+            random.seed()
             data_matrix[looper][1]=coord_x_list[looper]
             coord_y_list.append(randint((-(height/2)+(width/11)),((height/2))-(width/11)))
             data_matrix[looper][2]=coord_y_list[looper]
-            data_matrix[looper][0]=stim
             looper=looper+1
         coordFlag = False
         looper=0
-        
+    
+    #resize matrix 
+    new_col = data_matrix.sum(1)[...,None] 
+    new_col.shape
+    all_data = np.append(data_matrix, new_col, 1)
+    all_data.shape
+    data_matrix=all_data
+    
     for thisTrial in training:
         currentLoop = training
         # abbreviate parameter names if possible (e.g. rgb = thisTrial.rgb)
@@ -389,6 +429,7 @@ for thisRound in rounds:
         #add x and y locations 
         #training.addData('xCoord', coord_x_list[looper])
         #training.addData('yCoord', coord_y_list[looper])
+        #create a list of random numbers between 1-18
         gridList = [] 
         def create_grid(list):
             
@@ -409,11 +450,12 @@ for thisRound in rounds:
                 line.setAutoDraw(True)
         
         #training.addData('order_'+str(nRound), looper+1)
+        data_matrix[order_list[looper]][currentCol]=looper+1
         
         #using the fuction to create the grid
         create_grid(gridList)
         #set the stim image from the directroy each loop
-        Stimuli_2.setImage(str(stim)+'a.jpg')
+        Stimuli_2.setImage(str(int(data_matrix[order_list[looper]][0]))+'a.jpg')
     
         #make the mouse invisible
         win.mouseVisible = 0
@@ -426,8 +468,8 @@ for thisRound in rounds:
         Stimuli_2.setPos((xPos,yPos))
         #set the movement rates for the Stimuli image
         #rate comes from the excel sheet, this he number of frames it takes for the image to reach its final destination
-        xMov=(coord_x_list[looper]/expInfo['frameRate'])
-        yMov=(coord_y_list[looper]/expInfo['frameRate'])
+        xMov=(coord_x_list[order_list[looper]]/expInfo['frameRate'])
+        yMov=(coord_y_list[order_list[looper]]/expInfo['frameRate'])
         
         # setup some python lists for storing info about the mouse
         mouse.clicked_name = []
@@ -489,43 +531,43 @@ for thisRound in rounds:
             #after delay starts here
             else:
                 #check if xCoord is positive or negative the flags are 1 if positive else remain 0
-                if coord_x_list[looper]>0:
+                if coord_x_list[order_list[looper]]>0:
                     xFlag=1 
                 #checks if yCoord is positive or negative (see above for flag function)
-                if coord_y_list[looper]>0:
+                if coord_y_list[order_list[looper]]>0:
                     yFlag=1
                     
                     #while the image hasn't reached it's final coordinates keep animating it
                 if finalFlag==0:
                     #if final x destination is positive keep moving x while it is less then the final coordinate
                     if xFlag==1: 
-                        if xPos<coord_x_list[looper]:
+                        if xPos<coord_x_list[order_list[looper]]:
                             xPos=xPos+xMov
                     #otherwise keep moving x while it is greater then the final  =x coordinate
                     else:
-                        if xPos>coord_x_list[looper]:
+                        if xPos>coord_x_list[order_list[looper]]:
                             xPos=xPos+xMov
                     #do the same as above but for y 
                     if yFlag==1:
-                        if yPos<coord_y_list[looper]:
+                        if yPos<coord_y_list[order_list[looper]]:
                             yPos=yPos+yMov
                     else:
-                        if yPos>coord_y_list[looper]:
+                        if yPos>coord_y_list[order_list[looper]]:
                             yPos=yPos+yMov
                     #after changing current x and y coordinates reset the position 
                     Stimuli_2.setPos((xPos,yPos))
                     #check if the final flag should be set AKA both x and y have reached the final coordinate 
                     if xFlag==1 and yFlag==1:
-                        if xPos>=coord_x_list[looper] and yPos>=coord_y_list[looper]:
+                        if xPos>=coord_x_list[order_list[looper]] and yPos>=coord_y_list[order_list[looper]]:
                             finalFlag=1
                     elif xFlag==1 and yFlag==0:
-                        if xPos>=coord_x_list[looper] and yPos<=coord_y_list[looper]:
+                        if xPos>=coord_x_list[order_list[looper]] and yPos<=coord_y_list[order_list[looper]]:
                             finalFlag=1
                     elif xFlag==0 and yFlag==1:
-                        if xPos<=coord_x_list[looper] and yPos>=coord_y_list[looper]:
+                        if xPos<=coord_x_list[order_list[looper]] and yPos>=coord_y_list[order_list[looper]]:
                             finalFlag=1
                     elif xFlag==0 and yFlag==0:
-                        if xPos<=coord_x_list[looper] and yPos<=coord_y_list[looper]:
+                        if xPos<=coord_x_list[order_list[looper]] and yPos<=coord_y_list[order_list[looper]]:
                             finalFlag=1
                 #once the final flag is set begin the termination of the routine 
                 if finalFlag>=1:
@@ -631,14 +673,33 @@ for thisRound in rounds:
         
     #save training data
     #training.next()
-    #filename = _thisDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+ '_training'+ str(nRound)
+    filename = _thisDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+ '_training'+ str(nRound)
+    np.savetxt(filename+'.csv', data_matrix, delimiter=',',fmt='%.2f')
     #training.saveAsWideText(filename, appendFile=True, fileCollisionMethod='rename')
     #filename='pickle'
     #training.saveAsPickle(filename)
     
     # completed 1 repeats of 'training'
     
-    
+    currentCol=currentCol+1
+    #resize matrix 
+    new_col = data_matrix.sum(1)[...,None] 
+    new_col.shape
+    all_data = np.append(data_matrix, new_col, 1)
+    all_data.shape
+    data_matrix=all_data
+    #resize matrix 
+    new_col = data_matrix.sum(1)[...,None] 
+    new_col.shape
+    all_data = np.append(data_matrix, new_col, 1)
+    all_data.shape
+    data_matrix=all_data
+    #resize matrix 
+    #new_col = data_matrix.sum(1)[...,None] 
+    #new_col.shape
+    #all_data = np.append(data_matrix, new_col, 1)
+    #all_data.shape
+    #data_matrix=all_data
     
     # ------Prepare to start Routine "Test_Intro"-------
     # update component parameters for each repeat
@@ -743,9 +804,9 @@ for thisRound in rounds:
     routineTimer.reset()
     
     # set up handler to look after randomisation of conditions etc
-    testing = data.TrialHandler(nReps=1, method='sequential', 
+    testing = data.TrialHandler(nReps=18, method='sequential', 
         extraInfo=expInfo, originPath=-1,
-        trialList=data.importConditions('Trials.xlsx'),
+        trialList=[None],
         seed=None, name='testing')
     thisExp.addLoop(rounds)  # add the loop to the experiment
     thisTest = testing.trialList[0]  # so we can initialise stimuli with some values
@@ -755,8 +816,11 @@ for thisRound in rounds:
             exec('{} = thisTest[paramName]'.format(paramName))
     
     looper=0
+    #generate random order on each runthrough of testing
+    random.seed()
+    order_list=random.sample(range(0, 18), 18)
+    #flag used later to end test
     nextFlag=True
-    
     for thisTest in testing:
         currentLoop = testing
         # abbreviate parameter names if possible (e.g. rgb = thisTest.rgb)
@@ -774,7 +838,7 @@ for thisRound in rounds:
         #stimPos = []
         #targetPos =[]
         order = []
-        delay=30
+        delay=15
         doneFlag=0
         # setup some python lists for storing info about the Mouse
         Mouse.x = []
@@ -805,12 +869,12 @@ for thisRound in rounds:
         #declare necessary variables and flags
         create_grid(gridList)
         Stimuli.opacity = 1
-        Stimuli.setImage(str(stim)+'a.jpg')
+        Stimuli.setImage(str(int(data_matrix[order_list[looper]][0]))+'a.jpg')
         xPos=0
         yPos=0
         Stimuli.setPos((xPos,yPos))
         if looper<runs:
-            Target.setPos((coord_x_list[looper],coord_y_list[looper]))
+            Target.setPos((coord_x_list[order_list[looper]],coord_y_list[order_list[looper]]))
         mouse_has_been_pressed = False
         startMouse1=0
         
@@ -884,7 +948,7 @@ for thisRound in rounds:
                 win.timeOnFlip(Target, 'tStartRefresh')  # time at next scr refresh
                 Target.setAutoDraw(True)
             if Target.status == STARTED:  # only update if drawing
-                Target.setPos((coord_x_list[looper],coord_y_list[looper]), log=False)
+                Target.setPos((coord_x_list[order_list[looper]],coord_y_list[order_list[looper]]), log=False)
             
             # *Stimuli* updates
             if Stimuli.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
@@ -971,80 +1035,92 @@ for thisRound in rounds:
                     if sum(buttons) > 0:  # state changed to a new click
                         # abort routine on response
                         continueRoutine = False
-            
-            if Mouse.isPressedIn(Stimuli, buttons=[0]) and startMouse1==0:
-                Stimuli.pos = Mouse.getPos()
-                Outline_blue.pos = Mouse.getPos()
-                mouse_has_been_pressed = True
-                
-            if not Mouse.isPressedIn(Stimuli, buttons=[0]) and mouse_has_been_pressed == True and startMouse1==0:
-                mouse_has_been_pressed = False
-                startMouse1=1
-                
+            #after a short pause allow user to use mouse to change stim position
+            if delay > 0:
+                delay=delay-1
             else:
-                if Mouse1.isPressedIn(Stimuli, buttons=[0]):
+                #check if mouse is pressed and move stim with mouse
+                if Mouse.isPressedIn(Stimuli, buttons=[0]) and startMouse1==0:
                     Stimuli.pos = Mouse.getPos()
                     Outline_blue.pos = Mouse.getPos()
-                    mouse_has_been_pressed = True    
+                    mouse_has_been_pressed = True
                     
-                if not Mouse1.isPressedIn(Stimuli, buttons=[0]) and mouse_has_been_pressed == True:
+                if not Mouse.isPressedIn(Stimuli, buttons=[0]) and mouse_has_been_pressed == True and startMouse1==0:
                     mouse_has_been_pressed = False
-                    Outline_blue.opacity = 1
-                    dist=[]
-                    dist=np.linalg.norm(Stimuli.pos-Target.pos)
-                    #testing.addData('stimPos', Stimuli.pos)
-                    #testing.addData('targetPos', Target.pos)
-                    if Stimuli.overlaps(Target):
-                        Outline_green.pos = Stimuli.pos
-                        Outline_green.opacity = 1
-                        Stimuli.pos=Target.pos
-                        Outline_blue.pos = Target.pos
-                        if looper==runs-1:
-                            textWrong = visual.TextStim(win, text='You performed well on '+str(100*((runs-wrongCounter)/runs))+'% of trials.\n\n\nPlease continue to pay attention to the location\nof each object during the next learning block.',font='Arial',pos=(0, 0), height=letter_size, wrapWidth=None, ori=0, color='white', colorSpace='rgb', opacity=1, languageStyle='LTR',depth=0.0)
-                            textRight = visual.TextStim(win, text='Congrats, you performed well on '+str(100*((runs-wrongCounter)/runs))+'% of trials.\n\n\nPlease continue to pay attention to the location\nof each object during the next learning block.', font='Arial',pos=(0, 0), height=letter_size, wrapWidth=None, ori=0, color='white', colorSpace='rgb', opacity=1, languageStyle='LTR',depth=0.0)
-                            Stimuli.opacity = 0
-                            Outline_red.opacity = 0
-                            Outline_blue.opacity = 0
-                            Outline_green.opacity = 0
-                            myLine.setAutoDraw(False)
-                            for line in gridList:
-                                line.setAutoDraw(False)
-                            if wrongCounter>=(runs/2):
-                                textWrong.setAutoDraw(True)
-                                doneFlag=1
+                    startMouse1=1
+                    
+                else:
+                    if Mouse1.isPressedIn(Stimuli, buttons=[0]):
+                        Stimuli.pos = Mouse.getPos()
+                        Outline_blue.pos = Mouse.getPos()
+                        mouse_has_been_pressed = True    
+                        
+                    if not Mouse1.isPressedIn(Stimuli, buttons=[0]) and mouse_has_been_pressed == True:
+                        mouse_has_been_pressed = False
+                        Outline_blue.opacity = 1
+                        dist=[]
+                        dist=np.linalg.norm(Stimuli.pos-Target.pos)
+                        testing.addData('stimPos', Stimuli.pos)
+                        testing.addData('targetPos', Target.pos)
+                        #just for checking error is being logged correctly 
+                        #data_matrix[order_list[looper]][currentCol+2]=Target.pos  
+                        if Stimuli.overlaps(Target):
+                            Outline_green.pos = Stimuli.pos
+                            Outline_green.opacity = 1
+                            Stimuli.pos=Target.pos
+                            Outline_blue.pos = Target.pos
+                            if looper==runs-1:
+                                textWrong = visual.TextStim(win, text='You performed well on '+str(100*((runs-wrongCounter)/runs))+'% of trials.\n\n\nPlease continue to pay attention to the location\nof each object during the next learning block.',font='Arial',pos=(0, 0), height=letter_size, wrapWidth=None, ori=0, color='white', colorSpace='rgb', opacity=1, languageStyle='LTR',depth=0.0)
+                                textRight = visual.TextStim(win, text='Congrats, you performed well on '+str(100*((runs-wrongCounter)/runs))+'% of trials.\n\n\nPlease continue to pay attention to the location\nof each object during the next learning block.', font='Arial',pos=(0, 0), height=letter_size, wrapWidth=None, ori=0, color='white', colorSpace='rgb', opacity=1, languageStyle='LTR',depth=0.0)
+                                Stimuli.opacity = 0
+                                Outline_red.opacity = 0
+                                Outline_blue.opacity = 0
+                                Outline_green.opacity = 0
+                                myLine.setAutoDraw(False)
+                                for line in gridList:
+                                    line.setAutoDraw(False)
+                                if wrongCounter>=(runs/2):
+                                    textWrong.setAutoDraw(True)
+                                    doneFlag=1
+                                    startMouse1=0
+                                else:
+                                    textRight.setAutoDraw(True)
+                                    doneFlag=1
+                                    startMouse1=0
                             else:
-                                textRight.setAutoDraw(True)
                                 doneFlag=1
+                                startMouse1=0
                         else:
-                            doneFlag=1
-                    else:
-                        Outline_red.pos = Stimuli.pos
-                        Outline_red.opacity = 1
-                        Outline_green.pos=Stimuli.pos
-                        Stimuli.pos=Target.pos
-                        Outline_blue.pos = Target.pos
-                        wrongCounter=wrongCounter+1
-                        myLine.start=Target.pos
-                        myLine.end=Outline_green.pos
-                        myLine.setAutoDraw(True)
-                        if looper==runs-1:
-                            textWrong = visual.TextStim(win, text='You performed well on '+str(100*((runs-wrongCounter)/runs))+'% of trials.\n\n\nPlease continue to pay attention to the location\nof each object during the next learning block.',font='Arial',pos=(0, 0), height=letter_size, wrapWidth=None, ori=0, color='white', colorSpace='rgb', opacity=1, languageStyle='LTR',depth=0.0)
-                            textRight = visual.TextStim(win, text='Congrats, you performed well on '+str(100*((runs-wrongCounter)/runs))+'% of trials.\n\n\nPlease continue to pay attention to the location\nof each object during the next learning block.', font='Arial',pos=(0, 0), height=letter_size, wrapWidth=None, ori=0, color='white', colorSpace='rgb', opacity=1, languageStyle='LTR',depth=0.0)
-                            Stimuli.opacity = 0
-                            Outline_red.opacity = 0
-                            Outline_blue.opacity = 0
-                            Outline_green.opacity = 0
-                            myLine.setAutoDraw(False)
-                            for line in gridList:
-                                line.setAutoDraw(False)
-                            if wrongCounter>=2:
-                                textWrong.setAutoDraw(True)
-                                doneFlag=1
+                            Outline_red.pos = Stimuli.pos
+                            Outline_red.opacity = 1
+                            Outline_green.pos=Stimuli.pos
+                            Stimuli.pos=Target.pos
+                            Outline_blue.pos = Target.pos
+                            wrongCounter=wrongCounter+1
+                            myLine.start=Target.pos
+                            myLine.end=Outline_green.pos
+                            myLine.setAutoDraw(True)
+                            if looper==runs-1:
+                                textWrong = visual.TextStim(win, text='You performed well on '+str(100*((runs-wrongCounter)/runs))+'% of trials.\n\n\nPlease continue to pay attention to the location\nof each object during the next learning block.',font='Arial',pos=(0, 0), height=letter_size, wrapWidth=None, ori=0, color='white', colorSpace='rgb', opacity=1, languageStyle='LTR',depth=0.0)
+                                textRight = visual.TextStim(win, text='Congrats, you performed well on '+str(100*((runs-wrongCounter)/runs))+'% of trials.\n\n\nPlease continue to pay attention to the location\nof each object during the next learning block.', font='Arial',pos=(0, 0), height=letter_size, wrapWidth=None, ori=0, color='white', colorSpace='rgb', opacity=1, languageStyle='LTR',depth=0.0)
+                                Stimuli.opacity = 0
+                                Outline_red.opacity = 0
+                                Outline_blue.opacity = 0
+                                Outline_green.opacity = 0
+                                myLine.setAutoDraw(False)
+                                for line in gridList:
+                                    line.setAutoDraw(False)
+                                if wrongCounter>=2:
+                                    textWrong.setAutoDraw(True)
+                                    doneFlag=1
+                                    startMouse1=0
+                                else:
+                                    textRight.setAutoDraw(True)
+                                    doneFlag=1
+                                    startMouse1=0
                             else:
-                                textRight.setAutoDraw(True)
                                 doneFlag=1
-                        else:
-                            doneFlag=1
+                                startMouse1=0
             
             
             # check for quit (typically the Esc key)
@@ -1060,7 +1136,7 @@ for thisRound in rounds:
                 if hasattr(thisComponent, "status") and thisComponent.status != FINISHED:
                     continueRoutine = True
                     break  # at least one component has not yet finished
-            
+           
             # refresh the screen
             if continueRoutine:  # don't flip if this routine is over or we'll get a blank screen
                 win.flip()
@@ -1068,50 +1144,56 @@ for thisRound in rounds:
         for thisComponent in TestingComponents:
             if hasattr(thisComponent, "setAutoDraw"):
                 thisComponent.setAutoDraw(False)
-        testing.addData('xCoord', coord_x_list[looper])
-        testing.addData('yCoord', coord_y_list[looper])
-        testing.addData('Error', dist)
-        #testing.addData('Outline_red.started', Outline_red.tStartRefresh)
-        #testing.addData('Outline_red.stopped', Outline_red.tStopRefresh)
-        #testing.addData('Outline_black.started', Outline_black.tStartRefresh)
-        #testing.addData('Outline_black.stopped', Outline_black.tStopRefresh)
-        #testing.addData('Outline_green.started', Outline_green.tStartRefresh)
-        #testing.addData('Outline_green.stopped', Outline_green.tStopRefresh)
-        #testing.addData('Outline_blue.started', Outline_blue.tStartRefresh)
-        #testing.addData('Outline_blue.stopped', Outline_blue.tStopRefresh)
-        #testing.addData('Target.started', Target.tStartRefresh)
-        #testing.addData('Target.stopped', Target.tStopRefresh)
-        #testing.addData('Stimuli.started', Stimuli.tStartRefresh)
-        #testing.addData('Stimuli.stopped', Stimuli.tStopRefresh)
+       
+        #add order and error to data matrix to be output 
+        data_matrix[order_list[looper]][currentCol]=looper+1
+        data_matrix[order_list[looper]][currentCol+1]=dist  
+        
+        #store other data in psychopy "final" file
+        thisExp.addData('xCoord', coord_x_list[order_list[looper]])
+        thisExp.addData('yCoord', coord_y_list[order_list[looper]])
+        thisExp.addData('Error', dist)
+        thisExp.addData('Outline_red.started', Outline_red.tStartRefresh)
+        thisExp.addData('Outline_red.stopped', Outline_red.tStopRefresh)
+        thisExp.addData('Outline_black.started', Outline_black.tStartRefresh)
+        thisExp.addData('Outline_black.stopped', Outline_black.tStopRefresh)
+        thisExp.addData('Outline_green.started', Outline_green.tStartRefresh)
+        thisExp.addData('Outline_green.stopped', Outline_green.tStopRefresh)
+        thisExp.addData('Outline_blue.started', Outline_blue.tStartRefresh)
+        thisExp.addData('Outline_blue.stopped', Outline_blue.tStopRefresh)
+        thisExp.addData('Target.started', Target.tStartRefresh)
+        thisExp.addData('Target.stopped', Target.tStopRefresh)
+        thisExp.addData('Stimuli.started', Stimuli.tStartRefresh)
+        thisExp.addData('Stimuli.stopped', Stimuli.tStopRefresh)
         # store data for testing (TrialHandler)
-        #testing.addData('Mouse.x', Mouse.x)
-        #testing.addData('Mouse.y', Mouse.y)
-        #testing.addData('Mouse.leftButton', Mouse.leftButton)
-        #testing.addData('Mouse.midButton', Mouse.midButton)
-        #testing.addData('Mouse.rightButton', Mouse.rightButton)
-        #testing.addData('Mouse.time', Mouse.time)
-        #testing.addData('Mouse.clicked_name', Mouse.clicked_name)
-        #testing.addData('Mouse.started', Mouse.tStart)
-        #testing.addData('Mouse.stopped', Mouse.tStop)
+        thisExp.addData('Mouse.x', Mouse.x)
+        thisExp.addData('Mouse.y', Mouse.y)
+        thisExp.addData('Mouse.leftButton', Mouse.leftButton)
+        thisExp.addData('Mouse.midButton', Mouse.midButton)
+        thisExp.addData('Mouse.rightButton', Mouse.rightButton)
+        thisExp.addData('Mouse.time', Mouse.time)
+        thisExp.addData('Mouse.clicked_name', Mouse.clicked_name)
+        thisExp.addData('Mouse.started', Mouse.tStart)
+        thisExp.addData('Mouse.stopped', Mouse.tStop)
         # store data for testing (TrialHandler)
-        #testing.addData('Mouse1.x', Mouse1.x)
-        #testing.addData('Mouse1.y', Mouse1.y)
-        #testing.addData('Mouse1.leftButton', Mouse1.leftButton)
-        #testing.addData('Mouse1.midButton', Mouse1.midButton)
-        #testing.addData('Mouse1.rightButton', Mouse1.rightButton)
-        #testing.addData('Mouse1.time', Mouse1.time)
-        #testing.addData('Mouse1.clicked_name', Mouse1.clicked_name)
-        #testing.addData('Mouse1.started', Mouse1.tStart)
-        #testing.addData('Mouse1.stopped', Mouse1.tStop)
+        thisExp.addData('Mouse1.x', Mouse1.x)
+        thisExp.addData('Mouse1.y', Mouse1.y)
+        thisExp.addData('Mouse1.leftButton', Mouse1.leftButton)
+        thisExp.addData('Mouse1.midButton', Mouse1.midButton)
+        thisExp.addData('Mouse1.rightButton', Mouse1.rightButton)
+        thisExp.addData('Mouse1.time', Mouse1.time)
+        thisExp.addData('Mouse1.clicked_name', Mouse1.clicked_name)
+        thisExp.addData('Mouse1.started', Mouse1.tStart)
+        thisExp.addData('Mouse1.stopped', Mouse1.tStop)
         # store data for testing (TrialHandler)
-        #testing.addData('Mouse2.x', Mouse2.x)
-        #testing.addData('Mouse2.y', Mouse2.y)
-        #testing.addData('Mouse2.leftButton', Mouse2.leftButton)
-        #testing.addData('Mouse2.midButton', Mouse2.midButton)
-        #testing.addData('Mouse2.rightButton', Mouse2.rightButton)
-        #testing.addData('Mouse2.time', Mouse2.time)
-        #testing.addData('Mouse2.started', Mouse2.tStart)
-        #testing.addData('Mouse2.stopped', Mouse2.tStop)
+        thisExp.addData('Mouse2.x', Mouse2.x)
+        thisExp.addData('Mouse2.y', Mouse2.y)
+        thisExp.addData('Mouse2.leftButton', Mouse2.leftButton)
+        thisExp.addData('Mouse2.midButton', Mouse2.midButton)
+        thisExp.addData('Mouse2.rightButton', Mouse2.rightButton)
+        thisExp.addData('Mouse2.time', Mouse2.time)
+        thisExp.addData('Mouse2.started', Mouse2.tStart)
+        thisExp.addData('Mouse2.stopped', Mouse2.tStop)
         Outline_red.opacity = 0
         Outline_blue.opacity = 0
         Outline_green.opacity = 0
@@ -1127,13 +1209,18 @@ for thisRound in rounds:
         #if nextFlag==True
         looper=looper+1
         
-
-    #filename = _thisDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+'_testing_'+ str(nRound)
+    #save matrix out
+    filename = _thisDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+'_testing_'+ str(nRound)
     #testing.saveAsWideText(filename, appendFile=False, fileCollisionMethod='rename')
+    np.savetxt(filename+'.csv', data_matrix, delimiter=',',fmt='%.2f')
     #filename='pickle'
     #testing.saveAsPickle(filename)
     
     # completed 1 repeats of 'testing'
+    #keep track of turrent collums to add more data next run in correct spot
+    currentCol=currentCol+2
+    #currentCol=currentCol+3
+    #keep track of round for output file names 
     nRound = nRound+1       
 # completed 2 repeats of 'rounds'
         
@@ -1142,6 +1229,7 @@ for thisRound in rounds:
 win.flip()
 
 #thisExp.nextEntry()
+#saves data out in "final" file
 # these shouldn't be strictly necessary (should auto-save)
 filename = _thisDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+'final'
 thisExp.saveAsWideText(filename)
