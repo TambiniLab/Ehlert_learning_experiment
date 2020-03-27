@@ -100,11 +100,11 @@ defaultKeyboard = keyboard.Keyboard()
 
 #wait time variables 
 #should be 2
-wait_time1=1
+wait_time1=2
 #should be 3
-wait_time2=1
+wait_time2=3
 #number of stimuli to be used per run of experiment 
-n_stims=4
+n_stims=18
 
 #create matrix three collumns, and one row per stimuli used
 rows=n_stims
@@ -115,17 +115,12 @@ data_matrix = np.zeros( (rows, cols) )
 coord_x_list = []
 coord_y_list = []
 
+#used to make sure coords are only generated on first run through
+coordFlag=False
+
 #list used for testing to criterion 
 #0 = not met, 1 = met
 criterion_list = [0]*n_stims
-
-#set flags to False 
-#used to make sure coords are only generated on first run through
-coordFlag=False
-#used during training to note when the training is over 
-ranFlag=False
-#used to note when experiment criterion has been met
-completeFlag=False
 
 #funciton that creates a grid on the screen 
 def create_grid(list):
@@ -165,6 +160,10 @@ if thisRound != None:
 
 for thisRound in rounds:
     currentLoop = rounds
+    #set flags to False 
+    #used to note when experiment criterion has been met
+    completeFlag=False
+
     # abbreviate parameter names if possible (e.g. rgb = thisRound.rgb)
     if thisRound != None:
         for paramName in thisRound:
@@ -456,13 +455,70 @@ for thisRound in rounds:
             exec('{} = thisTrial[paramName]'.format(paramName))
        
     
-    #set up initial matrix 
+    #set up initial matrix during first round only
     if coordFlag == False:
         looper=0
-        #on first run creates random locations for stims  
-        #generate list of stims to use
-        #create a list of random numbers between 1- #number of stims
+        
+        #create a list of random numbers between 1- #number of stims to use to generate the stim images for the experiment
         randStim=random.sample(range(1, 266), n_stims)
+        
+        
+        #on first run creates random locations for stims divided into four quadrants of the screen 
+        #make n_stim divisable by 4
+        
+        rmaindr=n_stims%4
+        tmp_stim=n_stims-rmaindr
+        tmp_stim=tmp_stim/4
+        
+        #1/4 in upper right quadrant 
+        while looper < tmp_stim:
+            random.seed()
+            coord_x_list.append(randint(0,((width/2)-stim_size)))
+            data_matrix[looper][1]=coord_x_list[looper]
+            #make stim a random integer between 1 and 266
+            #use sample so no duplicates
+            data_matrix[looper][0]=randStim[looper]
+            random.seed()
+            coord_y_list.append(randint(0,((height/2)-stim_size)))
+            data_matrix[looper][2]=coord_y_list[looper]
+            looper=looper+1
+        #1/4 in bottom right quadrant 
+        while looper < tmp_stim*2:
+            random.seed()
+            coord_x_list.append(randint(0,((width/2)-stim_size)))
+            data_matrix[looper][1]=coord_x_list[looper]
+            #make stim a random integer between 1 and 266
+            #use sample so no duplicates
+            data_matrix[looper][0]=randStim[looper]
+            random.seed()
+            coord_y_list.append(randint((-(height/2)+stim_size),0))
+            data_matrix[looper][2]=coord_y_list[looper]
+            looper=looper+1
+        #1/4 in upper left quadrant     
+        while looper < tmp_stim*3:
+            random.seed()
+            coord_x_list.append(randint((-(width/2)+stim_size),0))
+            data_matrix[looper][1]=coord_x_list[looper]
+            #make stim a random integer between 1 and 266
+            #use sample so no duplicates
+            data_matrix[looper][0]=randStim[looper]
+            random.seed()
+            coord_y_list.append(randint(0,((height/2)-stim_size)))
+            data_matrix[looper][2]=coord_y_list[looper]
+            looper=looper+1
+        #1/4 in bottom left quadrant 
+        while looper < tmp_stim*4:
+            random.seed()
+            coord_x_list.append(randint((-(width/2)+stim_size),0))
+            data_matrix[looper][1]=coord_x_list[looper]
+            #make stim a random integer between 1 and 266
+            #use sample so no duplicates
+            data_matrix[looper][0]=randStim[looper]
+            random.seed()
+            coord_y_list.append(randint((-(height/2)+stim_size),0))
+            data_matrix[looper][2]=coord_y_list[looper]
+            looper=looper+1
+        #the remainder randomly distributed 
         while looper < n_stims:
             random.seed()
             coord_x_list.append(randint((-(width/2)+stim_size),((width/2)-stim_size)))
@@ -475,7 +531,9 @@ for thisRound in rounds:
             data_matrix[looper][2]=coord_y_list[looper]
             looper=looper+1
         coordFlag = True
-        looper=0
+    
+    looper=0
+    order_var=0
     
     #resize matrix adding one collumn 
     new_col = data_matrix.sum(1)[...,None] 
@@ -492,7 +550,7 @@ for thisRound in rounds:
                 exec('{} = thisTrial[paramName]'.format(paramName))
       
         if criterion_list[order_list[looper]]==1:
-            data_matrix[order_list[looper]][currentCol]=looper+1
+            data_matrix[order_list[looper]][currentCol]=float('nan')
             continueRoutine = False
         else:
             # ------Prepare to start Routine "Training"-------
@@ -504,7 +562,7 @@ for thisRound in rounds:
             #function that creates grid over screen based upon resolution input
             gridList = [] 
             
-            data_matrix[order_list[looper]][currentCol]=looper+1
+            data_matrix[order_list[looper]][currentCol]=order_var+1
             
             #hide the mouse from the user
             win.mouseVisible = 0
@@ -740,32 +798,33 @@ for thisRound in rounds:
             thisExp.addData('mouse.leftButton', buttons[0])
             thisExp.addData('mouse.midButton', buttons[1])
             thisExp.addData('mouse.rightButton', buttons[2])
+            # store data for training (TrialHandler)
+            x, y = Mouse3.getPos()
+            buttons = Mouse3.getPressed()
+            if sum(buttons):
+                # check if the mouse was inside our 'clickable' objects
+                gotValidClick = False
+                for obj in [Stimuli_2]:
+                    if obj.contains(Mouse3):
+                        gotValidClick = True
+                        Mouse3.clicked_name.append(obj.name)
+            
+            if len(Mouse3.clicked_name):
+                thisExp.addData('mouse.clicked_name', Mouse3.clicked_name[0])
+            thisExp.addData('mouse.started', Mouse3.tStart)
+            thisExp.addData('mouse.stopped', Mouse3.tStop)
+            # the Routine "Training" was not non-slip safe, so reset the non-slip timer
+            order_var=order_var+1
+            
         #make sure the outlines are invisible again before next loop
+        looper=looper+1
+        routineTimer.reset()
         Outline_red_2.opacity = 0
         Outline_black_2.opacity = 0
         
         #removing the grid
         for line in gridList:
             line.setAutoDraw(False)
-            
-        # store data for training (TrialHandler)
-        x, y = Mouse3.getPos()
-        buttons = Mouse3.getPressed()
-        if sum(buttons):
-            # check if the mouse was inside our 'clickable' objects
-            gotValidClick = False
-            for obj in [Stimuli_2]:
-                if obj.contains(Mouse3):
-                    gotValidClick = True
-                    Mouse3.clicked_name.append(obj.name)
-        
-        if len(Mouse3.clicked_name):
-            thisExp.addData('mouse.clicked_name', Mouse3.clicked_name[0])
-        thisExp.addData('mouse.started', Mouse3.tStart)
-        thisExp.addData('mouse.stopped', Mouse3.tStop)
-        # the Routine "Training" was not non-slip safe, so reset the non-slip timer
-        looper=looper+1
-        routineTimer.reset()
         
     #save training data
     thisExp.nextEntry()
@@ -918,6 +977,7 @@ for thisRound in rounds:
     #flag used later to end test
     nextFlag=True
     looper=0
+    order_var=0
     
     for thisTest in testing:
         currentLoop = testing
@@ -928,8 +988,8 @@ for thisRound in rounds:
         # ------Prepare to start Routine "Testing"-------
         #if criterion has been met for this stim skip test
         if criterion_list[order_list[looper]]==1:
-            data_matrix[order_list[looper]][currentCol]=looper+1
-            data_matrix[order_list[looper]][currentCol+1]=-1  
+            data_matrix[order_list[looper]][currentCol]=float('nan')
+            data_matrix[order_list[looper]][currentCol+1]=float('nan')
             continueRoutine = False
         else:
             #update component parameters for each repeat
@@ -1171,11 +1231,14 @@ for thisRound in rounds:
                     dist=[]
                     dist=np.linalg.norm(Stimuli.pos-Target.pos)
                     #add order and error to data matrix to be output 
-                    data_matrix[order_list[looper]][currentCol]=looper+1
+                    data_matrix[order_list[looper]][currentCol]=order_var+1
                     data_matrix[order_list[looper]][currentCol+1]=dist  
                      #one the second run on check if error was <= 200, if user got location right twice in a row remove it from runs 
                     if nRound >=2 and data_matrix[order_list[looper]][currentCol+1]<=200 and data_matrix[order_list[looper]][currentCol-2]<=200:
                         criterion_list[order_list[looper]]=1
+                        order_var=order_var+1
+                    else: 
+                        criterion_list[order_list[looper]]=0
                     testing.addData('stimPos', Stimuli.pos)
                     testing.addData('targetPos', Target.pos)
                     #just for checking error is being logged correctly 
@@ -1278,6 +1341,7 @@ for thisRound in rounds:
             thisExp.addData('Mouse2.time', Mouse2.time)
             thisExp.addData('Mouse2.started', Mouse2.tStart)
             thisExp.addData('Mouse2.stopped', Mouse2.tStop)
+            order_var=order_var+1
         
         if looper==n_stims-1:
             Stimuli.opacity = 0
