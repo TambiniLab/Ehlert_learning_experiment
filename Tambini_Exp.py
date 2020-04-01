@@ -85,7 +85,7 @@ win = visual.Window(
     size= m.getSizePix(), fullscr=True, screen=0, 
     winType='pyglet', allowGUI=False, allowStencil=False,
     monitor=m, color=[0,0,0], colorSpace='rgb',
-    blendMode='avg', useFBO=True, 
+    blendMode='avg', useRetina=True, useFBO=True, 
     units='pix')
 # store frame rate of monitor if we can measure it
 #expInfo['frameRate'] = win.getActualFrameRate()
@@ -473,61 +473,70 @@ for thisRound in rounds:
         #1/4 in upper right quadrant 
         while looper < tmp_stim:
             random.seed()
-            coord_x_list.append(randint(0,((width/2)-stim_size)))
+            coord_x_list.append(randint((stim_size/2),((width/2)-stim_size)))
             data_matrix[looper][1]=coord_x_list[looper]
             #make stim a random integer between 1 and 266
             #use sample so no duplicates
             data_matrix[looper][0]=randStim[looper]
             random.seed()
-            coord_y_list.append(randint(0,((height/2)-stim_size)))
+            coord_y_list.append(randint((stim_size/2),((height/2)-stim_size)))
             data_matrix[looper][2]=coord_y_list[looper]
             looper=looper+1
         #1/4 in bottom right quadrant 
         while looper < tmp_stim*2:
             random.seed()
-            coord_x_list.append(randint(0,((width/2)-stim_size)))
+            coord_x_list.append(randint((stim_size/2),((width/2)-stim_size)))
             data_matrix[looper][1]=coord_x_list[looper]
             #make stim a random integer between 1 and 266
             #use sample so no duplicates
             data_matrix[looper][0]=randStim[looper]
             random.seed()
-            coord_y_list.append(randint((-(height/2)+stim_size),0))
+            coord_y_list.append(randint((-(height/2)+stim_size),(-stim_size/2)))
             data_matrix[looper][2]=coord_y_list[looper]
             looper=looper+1
         #1/4 in upper left quadrant     
         while looper < tmp_stim*3:
             random.seed()
-            coord_x_list.append(randint((-(width/2)+stim_size),0))
+            coord_x_list.append(randint((-(width/2)+stim_size),(-stim_size/2)))
             data_matrix[looper][1]=coord_x_list[looper]
             #make stim a random integer between 1 and 266
             #use sample so no duplicates
             data_matrix[looper][0]=randStim[looper]
             random.seed()
-            coord_y_list.append(randint(0,((height/2)-stim_size)))
+            coord_y_list.append(randint((stim_size/2),((height/2)-stim_size)))
             data_matrix[looper][2]=coord_y_list[looper]
             looper=looper+1
         #1/4 in bottom left quadrant 
         while looper < tmp_stim*4:
             random.seed()
-            coord_x_list.append(randint((-(width/2)+stim_size),0))
+            coord_x_list.append(randint((-(width/2)+stim_size),(-stim_size/2)))
             data_matrix[looper][1]=coord_x_list[looper]
             #make stim a random integer between 1 and 266
             #use sample so no duplicates
             data_matrix[looper][0]=randStim[looper]
             random.seed()
-            coord_y_list.append(randint((-(height/2)+stim_size),0))
+            coord_y_list.append(randint((-(height/2)+stim_size),(-stim_size/2)))
             data_matrix[looper][2]=coord_y_list[looper]
             looper=looper+1
         #the remainder randomly distributed 
         while looper < n_stims:
             random.seed()
             coord_x_list.append(randint((-(width/2)+stim_size),((width/2)-stim_size)))
+            #make sure random generated location is more then 1/2 stim size pixels from the center
+            if coord_x_list[looper]<stim_size/2 and coord_x_list[looper]>=0:
+                coord_x_list[looper]=stim_size/2
+            if coord_x_list[looper]>(-stim_size/2) and coord_x_list[looper]<=0:
+                coord_x_list[looper]=(-stim_size/2)
             data_matrix[looper][1]=coord_x_list[looper]
             #make stim a random integer between 1 and 266
             #use sample so no duplicates
             data_matrix[looper][0]=randStim[looper]
             random.seed()
             coord_y_list.append(randint((-(height/2)+stim_size),((height/2)-stim_size)))
+            if coord_x_list[looper]<100 and coord_x_list[looper]>=0:
+                coord_x_list[looper]=100
+            if coord_x_list[looper]>-100 and coord_x_list[looper]<=0:
+                coord_x_list[looper]=-100
             data_matrix[looper][2]=coord_y_list[looper]
             looper=looper+1
         coordFlag = True
@@ -755,6 +764,8 @@ for thisRound in rounds:
                     Outline_red_2.opacity = 0
                     if ranFlag==False:
                         Mouse3.setPos((coord_x_list[order_list[looper]],coord_y_list[order_list[looper]]))
+                        win.winHandle.Mouse3_x = x  # hack to change pyglet window
+                        win.winHandle.Mouse3_y = y
                     win.mouseVisible = 1
                     ranFlag=True
             
