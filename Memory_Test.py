@@ -46,7 +46,7 @@ os.chdir(_thisDir)
 
 # Store info about the experiment session (saved in psychopy created file)
 psychopyVersion = '3.2.4'
-expName = 'Memory_Testing'  # from the Builder filename that created this script
+expName = 'Memory_Testing_'  # from the Builder filename that created this script
 expInfo = {'participant': '', 'session': '001'}
 dlg = gui.DlgFromDict(dictionary=expInfo, sortKeys=False, title=expName)
 if dlg.OK == False:
@@ -58,7 +58,7 @@ expInfo['psychopyVersion'] = psychopyVersion
 #creates data file
 # Data file name stem = absolute path + name; later add .psyexp, .csv, .log, etc
 #filename = _dataDir + os.sep + u'data_'+expInfo['participant']+'_'+expName+'_'+expInfo['date']+'/%s' %(expInfo['participant'])
-filename = _dataDir + os.sep + u'Subject_'+expInfo['participant']+'/''%s_%s_%s' % (expInfo['participant'], expInfo['date'], expName)
+filename = _dataDir + os.sep + u'Subject_'+expInfo['participant']+'/%s_%s_%s' % (expInfo['participant'], expInfo['date'], expName)
  
 # An ExperimentHandler isn't essential but helps with data saving
 thisExp = data.ExperimentHandler(name=expName, version='',
@@ -79,8 +79,8 @@ frameTolerance = 0.001  # how close to onset before 'same' frame
 #if after first run grid size etc... seems off check the console log it should output the proper resolution
 #change height and width to this resolution and try running again
 #unit is pixels
-height=1080
-width=1920
+height=900
+width=1440
 m = monitors.Monitor("default", width=28.8, distance=200)
 m.setSizePix((width, height))
 m.save()
@@ -103,72 +103,7 @@ else:
 # create a default keyboard (e.g. to check for escape)
 defaultKeyboard = keyboard.Keyboard()
 
-#wait time variables 
-#should be 2
-wait_time1=2
-#should be 3
-wait_time2=3
-#number of stimuli to be used per run of experiment 
-rows=0
-
-#change file name to last testing file of testing to criterion session.   
-files=len([name for name in os.listdir(_dataDir+"/Subject_"+expInfo['participant']) if os.path.isfile(os.path.join(_dataDir+"/Subject_"+expInfo['participant'], name))])
-files=int((files-3)/2)
-
-#determine number of stims used in previous training to criterion or testing
-for file_name in os.listdir(_dataDir+"/Subject_"+expInfo['participant']):
-     if fnmatch.fnmatch(file_name, '*testing_'+str(files)+'.csv'):
-        with open(_dataDir+"/Subject_"+expInfo['participant']+"/"+file_name, "r") as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            for lines in csv_reader:
-                rows += 1
-
-nRound=files+1 
-coord_x_list=[]
-coord_y_list=[]
-
-#Create a new data matrix the same size as the past data matrix 
-n_stims=rows
-cols=3+(files*3)
-currentCol=cols
-
-looper=0
-row=0
-data_matrix = np.zeros( (rows, cols) )
-
-
-#find the appropriate data fileopen the data file and save the data to a new matrix
-for file_name in os.listdir(_dataDir+"/Subject_"+expInfo['participant']):
-     if fnmatch.fnmatch(file_name, '*testing_'+str(files)+'.csv'):
-        with open(_dataDir+"/Subject_"+expInfo['participant']+"/"+file_name, "r") as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            for lines in csv_reader:
-                while looper<cols:
-                    data_matrix[row][looper]=float(lines[looper])
-                    looper=looper+1
-                coord_x_list.append(float(lines[1]))
-                coord_y_list.append(float(lines[2]))
-                row=row+1
-                looper=0
-        
-        
-        
-        
-#datafile.close()
-#used to make sure coords are only generated on first run through
-gridList = []
-#stim_list = [207.00,36.00,227.0,236.00,152.00,28.00,226.00,80.00,214.00,79.00,166.00,222.00,139.00,65.00,50.00,160.00,27.00,201.00]
-#coord_x_list = [198.00,704.00,223.00,583.00,498.00,128.00,628.00,580.00,-598.00,-134.00,-263.00,-135.00,-255.00,-421.00,-264.00,-596.00,-398.00,-125.00]
-#coord_y_list = [215.00,266.00,202.00,182.00,-201.00,-227.00,-167.00,-176.00,272.00,159.00,148.00,207.00,-278.00,-172.00,-260.00,-151.00,274.00,100.00]
-
-looper=0
-#while looper<n_stims:
-    #data_matrix[looper][0]=int(stim_list[looper])
-    #data_matrix[looper][1]=int(coord_x_list[looper])
-    #data_matrix[looper][2]=int(coord_y_list[looper])
-    #looper=looper+1
-#looper=0    
-
+#Function Definitions 
 #funciton that creates a grid on the screen 
 def create_grid(list):
     lineXPos  = -(width/2)
@@ -186,10 +121,100 @@ def create_grid(list):
     for line in gridList:
         line.lineWidth = 10
         line.setAutoDraw(True)
+ 
+
+#this function takes the file name you are looking for an number you want and if it finds it it returns the number of rows in the file       
+def count_rows(looking_for,this):
+    counter=0
+    for file_name in os.listdir(_dataDir+"/Subject_"+expInfo['participant']):
+         if fnmatch.fnmatch(file_name, '*'+looking_for+str(this)+'.csv'):
+            with open(_dataDir+"/Subject_"+expInfo['participant']+"/"+file_name, "r") as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=',')
+                for lines in csv_reader:
+                    counter += 1
+    return counter
+    
+#this function takes the file name and number you are looking for and the rows and collums of a matrix makes the matrix, and fills it with imported data then returns it   
+def import_data(looking_for,this,rows,cols): 
+    looper=0
+    row=0
+    matrix = np.zeros( (rows, cols) )
+    #find the appropriate data fileopen the data file and save the data to a new matrix
+    for file_name in os.listdir(_dataDir+"/Subject_"+expInfo['participant']):
+         if fnmatch.fnmatch(file_name, '*'+looking_for+str(this)+'.csv'):
+            with open(_dataDir+"/Subject_"+expInfo['participant']+"/"+file_name, "r") as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=',')
+                for lines in csv_reader:
+                    while looper<cols:
+                        matrix[row][looper]=float(lines[looper])
+                        looper=looper+1
+                    coord_x_list.append(float(lines[1]))
+                    coord_y_list.append(float(lines[2]))
+                    row=row+1
+                    looper=0
+    return matrix
+
+
+#wait time variables 
+nReps=1
+#should be 2
+wait_time1=2
+#should be 3
+wait_time2=3
+#number of stimuli to be used per run of experiment 
+rows=0
+files=0
+final_files=0 
+num_files=0
+
+final_files = len(fnmatch.filter(os.listdir(_dataDir+"/Subject_"+expInfo['participant']), '*final_test_*'))
+    
+if final_files>0:
+    #change file name to last testing file of testing to criterion session.   
+    files = len(fnmatch.filter(os.listdir(_dataDir+"/Subject_"+expInfo['participant']), '*testing_*'))
+    #determine number of stims used in previous training to criterion or testing
+    rows=count_rows('final_test_', final_files-1)
+    nRound=final_files
+else:
+    #change file name to last testing file of testing to criterion session.   
+    files = len(fnmatch.filter(os.listdir(_dataDir+"/Subject_"+expInfo['participant']), '*testing_*'))
+    #determine number of stims used in previous training to criterion or testing
+    rows=count_rows('testing_', files)
+    nRound=0
+    
+coord_x_list=[]
+coord_y_list=[]
+
+#Create a new data matrix the same size as the past data matrix 
+n_stims=rows
+
+if final_files >0:
+    cols=3+(files*3)+(final_files*(2*nReps))
+    currentCol=cols
+    data_matrix = import_data('final_test_', final_files-1, rows, cols) 
+else:
+    cols=3+(files*3)
+    currentCol=cols
+    data_matrix = import_data('testing_', files , rows, cols) 
+    
+#datafile.close()
+#used to make sure coords are only generated on first run through
+gridList = []
+#stim_list = [207.00,36.00,227.0,236.00,152.00,28.00,226.00,80.00,214.00,79.00,166.00,222.00,139.00,65.00,50.00,160.00,27.00,201.00]
+#coord_x_list = [198.00,704.00,223.00,583.00,498.00,128.00,628.00,580.00,-598.00,-134.00,-263.00,-135.00,-255.00,-421.00,-264.00,-596.00,-398.00,-125.00]
+#coord_y_list = [215.00,266.00,202.00,182.00,-201.00,-227.00,-167.00,-176.00,272.00,159.00,148.00,207.00,-278.00,-172.00,-260.00,-151.00,274.00,100.00]
+
+looper=0
+#while looper<n_stims:
+    #data_matrix[looper][0]=int(stim_list[looper])
+    #data_matrix[looper][1]=int(coord_x_list[looper])
+    #data_matrix[looper][2]=int(coord_y_list[looper])
+    #looper=looper+1
+#looper=0    
 
 # set up handler to look after randomisation of conditions etc
 #change nReps here to effect overall rounds of data testing
-rounds = data.TrialHandler(nReps=1, method='sequential', 
+rounds = data.TrialHandler(nReps=nReps, method='sequential', 
     extraInfo=expInfo, originPath=-1,
     trialList=[None],
     seed=None, name='rounds')
@@ -711,23 +736,27 @@ for thisRound in rounds:
             Stimuli.opacity = 0
             win.flip()
             core.wait(wait_time2)
-            textWrong = visual.TextStim(win, text='You performed well on '+str(int(100*((n_stims-wrongCounter)/n_stims)))+'% of trials.\n\n\nPlease continue to pay attention to the location\nof each object during the next learning block.',font='Arial',pos=(0, 0), height=letter_size, wrapWidth=None, ori=0, color='white', colorSpace='rgb', opacity=1, languageStyle='LTR',depth=0.0)
-            textRight = visual.TextStim(win, text='Congrats, you performed well on '+str(int(100*((n_stims-wrongCounter)/n_stims)))+'% of trials.\n\n\nPlease continue to pay attention to the location\nof each object during the next learning block.', font='Arial',pos=(0, 0), height=letter_size, wrapWidth=None, ori=0, color='white', colorSpace='rgb', opacity=1, languageStyle='LTR',depth=0.0)
+             #display a final message
+            completeText = visual.TextStim(win, text= 'Great job, you have completed the final memory test!!\n\n\nPlease alert the experimenter.',font='Arial',pos=(0, 0), height=letter_size, wrapWidth=width, ori=0, color='white', colorSpace='rgb', opacity=1, languageStyle='LTR',depth=0.0)
+            #textWrong = visual.TextStim(win, text='You performed well on '+str(int(100*((n_stims-wrongCounter)/n_stims)))+'% of trials.\n\n\nPlease continue to pay attention to the location\nof each object during the next learning block.',font='Arial',pos=(0, 0), height=letter_size, wrapWidth=None, ori=0, color='white', colorSpace='rgb', opacity=1, languageStyle='LTR',depth=0.0)
+            #textRight = visual.TextStim(win, text='Congrats, you performed well on '+str(int(100*((n_stims-wrongCounter)/n_stims)))+'% of trials.\n\n\nPlease continue to pay attention to the location\nof each object during the next learning block.', font='Arial',pos=(0, 0), height=letter_size, wrapWidth=None, ori=0, color='white', colorSpace='rgb', opacity=1, languageStyle='LTR',depth=0.0)
             for line in gridList:
                 line.setAutoDraw(False)
             win.flip()
-            if wrongCounter>=2:
-                win.mouseVisible=0
-                textWrong.setAutoDraw(True)
-                win.flip()
-                core.wait(wait_time2)
-            else:
-                win.mouseVisible=0
-                textRight.setAutoDraw(True)
-                win.flip()
-                core.wait(wait_time2)
-            textRight.setAutoDraw(False)
-            textWrong.setAutoDraw(False)
+            #if wrongCounter>=2:
+               # win.mouseVisible=0
+                #textWrong.setAutoDraw(True)
+               # win.flip()
+               # core.wait(wait_time2)
+           # else:
+            win.mouseVisible=0
+                #textRight.setAutoDraw(True)
+            win.flip()
+            completeText.setAutoDraw(True)
+            win.flip()
+            core.wait(wait_time2)
+            #textRight.setAutoDraw(False)
+            #textWrong.setAutoDraw(False)
         else:
             #make sure everything is off
             for line in gridList:
@@ -744,7 +773,7 @@ for thisRound in rounds:
     #save matrix out
     #filename = _dataDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+'_testing_'+ str(nRound)
     #testing.saveAsWideText(filename, appendFile=False, fileCollisionMethod='rename')
-    np.savetxt(filename+'_testing_'+ str(nRound)+'.csv', data_matrix, delimiter=',',fmt='%.2f')
+    np.savetxt(filename+'final_test_'+ str(nRound)+'.csv', data_matrix, delimiter=',',fmt='%.2f')
     #filename='pickle'
     #testing.saveAsPickle(filename)
     
@@ -763,9 +792,9 @@ for thisRound in rounds:
 #saves data out in "final" file
 # these shouldn't be strictly necessary (should auto-save)
 #filename = _dataDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+'final'
-thisExp.saveAsWideText(filename+'final')
-thisExp.saveAsPickle(filename+'final')
-logging.flush()
+#thisExp.saveAsWideText(filename+'final')
+#thisExp.saveAsPickle(filename+'final')
+#logging.flush()
 # make sure everything is closed down
 thisExp.abort()  # or data files will save again on exit
 win.close()

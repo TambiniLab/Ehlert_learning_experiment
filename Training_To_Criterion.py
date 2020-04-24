@@ -53,7 +53,7 @@ expInfo['psychopyVersion'] = psychopyVersion
 
 #creates data file
 # Data file name stem = absolute path + name; later add .psyexp, .csv, .log, etc
-filename = _dataDir + os.sep + u'Subject_'+expInfo['participant']+'/''%s_%s_%s' % (expInfo['participant'], expInfo['date'], expName)
+filename = _dataDir + os.sep + u'Subject_'+expInfo['participant']+'/%s_%s_%s' % (expInfo['participant'], expInfo['date'], expName)
 
 # An ExperimentHandler isn't essential but helps with data saving
 thisExp = data.ExperimentHandler(name=expName, version='',
@@ -63,8 +63,8 @@ thisExp = data.ExperimentHandler(name=expName, version='',
     dataFileName=filename)
 
 # save a log file for detail verbose info
-logFile = logging.LogFile(filename+'.log', level=logging.EXP)
-logging.console.setLevel(logging.WARNING)  # this outputs to the screen, not a file
+#logFile = logging.LogFile(filename+'.log', level=logging.EXP)
+#logging.console.setLevel(logging.WARNING)  # this outputs to the screen, not a file
 
 endExpNow = False  # flag for 'escape' or other condition => quit the exp
 frameTolerance = 0.001  # how close to onset before 'same' frame
@@ -74,8 +74,8 @@ frameTolerance = 0.001  # how close to onset before 'same' frame
 #if after first run grid size etc... seems off check the console log it should output the proper resolution
 #change height and width to this resolution and try running again
 #unit is pixels
-height=1080
-width=1920
+height=900
+width=1440
 m = monitors.Monitor("default", width=28.8, distance=200)
 m.setSizePix((width, height))
 m.save()
@@ -194,8 +194,8 @@ for thisRound in rounds:
         win.flip()
         core.wait(wait_time2)
         #filename = _dataDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+'final'
-        thisExp.saveAsWideText(filename+'final')
-        thisExp.saveAsPickle(filename+'final')
+        #thisExp.saveAsWideText(filename+'final')
+        #thisExp.saveAsPickle(filename+'final')
         logging.flush()
         # make sure everything is closed down
         thisExp.abort()  # or data files will save again on exit
@@ -1419,8 +1419,8 @@ for thisRound in rounds:
 #saves data out in "final" file
 # these shouldn't be strictly necessary (should auto-save)
 #filename = _dataDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+'final'
-thisExp.saveAsWideText(filename+'final')
-thisExp.saveAsPickle(filename+'final')
+#thisExp.saveAsWideText(filename+'final')
+#thisExp.saveAsPickle(filename+'final')
 logging.flush()
 # make sure everything is closed down
 thisExp.abort()  # or data files will save again on exit
