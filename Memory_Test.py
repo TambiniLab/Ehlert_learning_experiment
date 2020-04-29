@@ -1,12 +1,4 @@
-"""
-If you publish work using this script the most relevant publication is:
-
-    Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, Kastman E, Lindeløv JK. (2019) 
-        PsychoPy2: Experiments in behavior made easy Behav Res 51: 195. 
-        https://doi.org/10.3758/s13428-018-01193-y
-
-"""
-
+#import libraries and toolboxes
 from __future__ import absolute_import, division
 
 from psychopy import locale_setup
@@ -42,6 +34,8 @@ from psychopy.hardware import keyboard
 _dataDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/data"
 #where stimuli are read in from
 _thisDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/Files/stimuli/objects"
+#save psychopy data out to a seperate directory
+_psychPyData = "/Users/lehlert/Documents/PsychoPy/Tambini_2/data/psychoPyData"
 os.chdir(_thisDir)
 
 # Store info about the experiment session (saved in psychopy created file)

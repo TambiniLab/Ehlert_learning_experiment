@@ -1,5 +1,5 @@
+#import libraries and toolboxes
 from __future__ import absolute_import, division
-
 from psychopy import locale_setup
 from psychopy import prefs
 from psychopy import sound, gui, visual, monitors, core, data, event, logging, clock, hardware
@@ -31,6 +31,8 @@ _dataDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/data"
 _thisDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/Files/stimuli/objects"
 _textDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/Files/text"
 _scramDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/Files/scramObj"
+#save psychopy data out to a seperate directory
+_psychPyData = "/Users/lehlert/Documents/PsychoPy/Tambini_2/data/psychoPyData"
 
 # Store info about the experiment session
 psychopyVersion = '3.2.4'
@@ -124,6 +126,55 @@ use_these = random.sample(range(0, rows-1), (int((rows-2)/2)))
 #add the random 8 to a new list    
 for num in use_these:
    use_list.append(stim_list[num])
+   
+   
+#choose timings for each iti
+iti_timings = np.zeros((32,2))
+looper=0
+while looper < 32:
+    if looper < 8:
+        iti_timings[looper][0]=5
+        if looper < 4:
+            iti_timings[looper][1]=0  
+        else:
+            iti_timings[looper][1]=1
+    elif looper < 16:
+        iti_timings[looper][0]=6
+        if looper < 12:
+            iti_timings[looper][1]=0  
+        else:
+            iti_timings[looper][1]=1
+    elif looper < 24:
+        iti_timings[looper][0]=7
+        if looper < 20:
+            iti_timings[looper][1]=0  
+        else:
+            iti_timings[looper][1]=1
+    else:
+        iti_timings[looper][0]=8
+        if looper < 28:
+            iti_timings[looper][1]=0  
+        else:
+            iti_timings[looper][1]=1
+    looper=looper+1 
+
+#create an array with three permutations of the thirds set up above
+looper=0
+curRow=0
+order = np.zeros((96,2))
+
+#add data to order array for each third
+while looper <3:
+    tmp = []
+    tmp=np.random.permutation(iti_timings)
+    for rows in tmp:
+        order[curRow][0]=rows[0]
+        order[curRow][1]=rows[1]
+        curRow=curRow+1
+    looper=looper+1
+
+#save the order array out 
+np.savetxt(filename+'_order_'+'.csv', order, delimiter=',',fmt='%.2f')
 
 #change to adjust sizes of grid and stims 
 #if after first run grid size etc... seems off check the console log it should output the proper resolution
@@ -171,9 +222,6 @@ word_or_pseudo = visual.TextStim(win=win, name='word_or_pseudo',
     languageStyle='LTR',
     depth=-1.0);
 w_or_p = keyboard.Keyboard()
-
-
-
 # Initialize components for Routine "ITI"
 
 # set arrows up 
@@ -218,6 +266,12 @@ arrowR = visual.ShapeStim(win,
 globalClock = core.Clock()  # to track the time since experiment started
 routineTimer = core.CountdownTimer()  # to track time remaining of each (non-slip) routine 
 
+#data matrixes to save out
+w_or_p_save = []
+iti_w_or_p_save = [[]]
+words = []
+p_words = []
+
 # set up handler to look after randomisation of conditions etc
 trials = data.TrialHandler(nReps=96, method='sequential', 
     extraInfo=expInfo, originPath=-1,
@@ -230,6 +284,7 @@ if thisTrial != None:
     for paramName in thisTrial:
         exec('{} = thisTrial[paramName]'.format(paramName))
 looper=0
+ran_flag=False
 
 for thisTrial in trials:
     currentLoop = trials
@@ -276,18 +331,38 @@ for thisTrial in trials:
     #choose a scramble image to display
     scramble_choice = random.sample(range(0,96), 96)
     scramble.setImage(_scramDir+'/ScramObj'+str(scramble_choice[looper])+'.jpg')
-    
-    #50/50 word or pseudo word. Set every run of trial. 
-    random.seed()
-    choice=randint(0,100) 
-            
-    if choice < 51:
+    looper = 0 
+    #add word or pseudo word to appropriate lists 
+    while looper < 48:
         #strip quotes and extra characters
-        word_or_pseudo.setText(pword_list[plist_choice[looper]].strip("['']"))
+        #add to lists
+        p_words.append(str(pword_list[plist_choice[looper]].strip("['']")))
+        words.append(str(word_list[wlist_choice[looper]].strip("['']")))
+        looper=looper+1
     
-    else:
-        #strip quotes and extra characters
-        word_or_pseudo.setText(word_list[wlist_choice[looper]].strip("['']"))
+    
+    #reset looper and save out word and pword list files of those used 
+    looper=0
+    np.savetxt(filename+'_pword_list'+'.csv', p_words, delimiter=' ',fmt='%s')
+    np.savetxt(filename+'_word_list_'+'.csv', words, delimiter=' ',fmt='%s')
+   
+    #set the variables to 0 before first run only
+    if ran_flag==False:
+        current = 0
+        cur_Col=0
+        word_iterator = 0
+        pword_iterator = 0
+        ran_flag=True
+        
+    #while within one third display choose a timing from the matrix
+    #if second collumn is 0 set to word, if seond collum is 1 set to pseudo word
+    reps = order[current][0]
+    if order[current][1]==0:
+        word_or_pseudo.setText(str(words[word_iterator]))
+        word_iterator = word_iterator+1
+    elif order[current][1]==1:
+        word_or_pseudo.setText(str(p_words[pword_iterator]))
+        pword_iterator = pword_iterator+1
     
     # reset timers
     t = 0
@@ -393,8 +468,10 @@ for thisTrial in trials:
         # refresh the screen
         if continueRoutine:  # don't flip if this routine is over or we'll get a blank screen
             win.flip()
+            
+        #np.savetxt(filename+'_testing_'+ str(nRound)+'.csv', data_matrix, delimiter=',',fmt='%.2f')
     
-    # -------Ending Routine "trial"-------
+    # -------Ending Routine "trial"-------    
     for thisComponent in trialComponents:
         if hasattr(thisComponent, "setAutoDraw"):
             thisComponent.setAutoDraw(False)
@@ -405,18 +482,17 @@ for thisTrial in trials:
     # check responses
     if w_or_p.keys in ['', [], None]:  # No response was made
         w_or_p.keys = None
+        w_or_p_save.append('N')
     trials.addData('w_or_p.keys',w_or_p.keys)
     if w_or_p.keys != None:  # we had a response
         trials.addData('w_or_p.rt', w_or_p.rt)
+        w_or_p_save(w_or_p.rt)
     trials.addData('w_or_p.started', w_or_p.tStartRefresh)
     trials.addData('w_or_p.stopped', w_or_p.tStopRefresh)
     
-    #for every trial repeat 5, 6, 7, 8 times randomly chosen 
-    looper+=looper
-    reps=random.sample(range(5, 8), 1)
     
     # set up handler to look after randomisation of conditions etc
-    trials_2 = data.TrialHandler(nReps=reps[0], method='fullRandom', 
+    trials_2 = data.TrialHandler(nReps=reps, method='fullRandom', 
         extraInfo=expInfo, originPath=-1,
         trialList=[None],
         seed=None, name='trials_2')
@@ -427,18 +503,7 @@ for thisTrial in trials:
         for paramName in thisTrial_2:
             exec('{} = thisTrial_2[paramName]'.format(paramName))
        
-    current = 0
-    looper=0
-    #tracks total stims displayed
-    total=0
-     # 25% of the time display a stim 
-    random.seed()
-    choice=randint(0,100) 
-    #total here ensures that each stim is displayed once for a total of 24 overall displays
-    if choice > 75 and total < 24:
-        display_flag=True
-    
-            
+   
     
     for thisTrial_2 in trials_2:
         currentLoop = trials_2
@@ -498,7 +563,7 @@ for thisTrial in trials:
             
             # *reexpo* updates
             #only displays right before the next word or pseudoword is displayed, and if the display flag is set 
-            if reexpo.status == NOT_STARTED and tThisFlip >= 2-frameTolerance and looper==(reps[0]-1) and display_flag==True:
+            if reexpo.status == NOT_STARTED and tThisFlip >= 2-frameTolerance:
                 # keep track of start time/frame for later
                 reexpo.frameNStart = frameN  # exact frame index
                 reexpo.tStart = t  # local t and not account for scr refresh
@@ -578,6 +643,7 @@ for thisTrial in trials:
         trials_2.addData('w_or_p_iti.keys',w_or_p_iti.keys)
         if w_or_p_iti.keys != None:  # we had a response
             trials_2.addData('w_or_p_iti.rt', w_or_p_iti.rt)
+            
         trials_2.addData('reexpo.started', reexpo.tStartRefresh)
         trials_2.addData('reexpo.stopped', reexpo.tStopRefresh)
         trials_2.addData('w_or_p_iti.started', w_or_p_iti.tStartRefresh)
@@ -586,17 +652,17 @@ for thisTrial in trials:
    
     #iterate the list of stims when display flag is false, if current is over 7 then reset back to 0 
     if display_flag==True:
-        #iterate the list of choices
-        current= current+1
-        #track total stims displayed
-        total=total+1
+        #iterate the list of orders
+        current= current+1 
         #set flag to false and resent current if entire list has been iterated through
         display_flag=False
         if current > 7:
             current = 0
             
     # completed 5-8 repeats of 'trials_2' 
+    #np.savetxt(filename+'_testing_'+ str(nRound)+'.csv', data_matrix, delimiter=',',fmt='%.2f')
     thisExp.nextEntry()
+    
     
 # completed 96 repeats of 'trials'
 
@@ -606,6 +672,11 @@ for thisTrial in trials:
 win.flip()
 
 # these shouldn't be strictly necessary (should auto-save)
+#save out the w or p responses for the trails
+np.savetxt(filename+'_trial_responses_'+'.csv', w_or_p_save, delimiter=',',fmt='%s')
+#save out the w or p responses for the iti
+np.savetxt(filename+'_iti_responses_'+'.csv', iti_w_or_p_save, delimiter=',',fmt='%s')
+
 thisExp.saveAsWideText(filename+'.csv')
 thisExp.saveAsPickle(filename)
 logging.flush()
