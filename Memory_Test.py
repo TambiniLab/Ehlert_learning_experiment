@@ -35,7 +35,6 @@ _dataDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/data"
 #where stimuli are read in from
 _thisDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/Files/stimuli/objects"
 #save psychopy data out to a seperate directory
-_psychPyData = "/Users/lehlert/Documents/PsychoPy/Tambini_2/data/psychoPyData"
 os.chdir(_thisDir)
 
 # Store info about the experiment session (saved in psychopy created file)
@@ -194,9 +193,6 @@ else:
 #datafile.close()
 #used to make sure coords are only generated on first run through
 gridList = []
-#stim_list = [207.00,36.00,227.0,236.00,152.00,28.00,226.00,80.00,214.00,79.00,166.00,222.00,139.00,65.00,50.00,160.00,27.00,201.00]
-#coord_x_list = [198.00,704.00,223.00,583.00,498.00,128.00,628.00,580.00,-598.00,-134.00,-263.00,-135.00,-255.00,-421.00,-264.00,-596.00,-398.00,-125.00]
-#coord_y_list = [215.00,266.00,202.00,182.00,-201.00,-227.00,-167.00,-176.00,272.00,159.00,148.00,207.00,-278.00,-172.00,-260.00,-151.00,274.00,100.00]
 
 looper=0
 #while looper<n_stims:
@@ -422,7 +418,7 @@ for thisRound in rounds:
         extraInfo=expInfo, originPath=-1,
         trialList=[None],
         seed=None, name='testing')
-    thisExp.addLoop(rounds)  # add the loop to the experiment
+    thisExp.addLoop(testing)  # add the loop to the experiment
     thisTest = testing.trialList[0]  # so we can initialise stimuli with some values
     # abbreviate parameter names if possible (e.g. rgb = thisTest.rgb)
     if thisTest != None:
@@ -688,42 +684,42 @@ for thisRound in rounds:
             if hasattr(thisComponent, "setAutoDraw"):
                 thisComponent.setAutoDraw(False)
         #store other data in psychopy "final" file
-        thisExp.addData('xCoord', coord_x_list[order_list[looper]])
-        thisExp.addData('yCoord', coord_y_list[order_list[looper]])
-        thisExp.addData('Error', dist)
-        thisExp.addData('Target.started', Target.tStartRefresh)
-        thisExp.addData('Target.stopped', Target.tStopRefresh)
-        thisExp.addData('Stimuli.started', Stimuli.tStartRefresh)
-        thisExp.addData('Stimuli.stopped', Stimuli.tStopRefresh)
+        testing.addData('xCoord', coord_x_list[order_list[looper]])
+        testing.addData('yCoord', coord_y_list[order_list[looper]])
+        testing.addData('Error', dist)
+        testing.addData('Target.started', Target.tStartRefresh)
+        testing.addData('Target.stopped', Target.tStopRefresh)
+        testing.addData('Stimuli.started', Stimuli.tStartRefresh)
+        testing.addData('Stimuli.stopped', Stimuli.tStopRefresh)
         # store data for testing (TrialHandler)
-        thisExp.addData('Mouse.x', Mouse4.x)
-        thisExp.addData('Mouse.y', Mouse4.y)
-        thisExp.addData('Mouse.leftButton', Mouse4.leftButton)
-        thisExp.addData('Mouse.midButton', Mouse4.midButton)
-        thisExp.addData('Mouse.rightButton', Mouse4.rightButton)
-        thisExp.addData('Mouse.time', Mouse4.time)
-        thisExp.addData('Mouse.clicked_name', Mouse4.clicked_name)
-        thisExp.addData('Mouse.started', Mouse4.tStart)
-        thisExp.addData('Mouse.stopped', Mouse4.tStop)
+        testing.addData('Mouse.x', Mouse4.x)
+        testing.addData('Mouse.y', Mouse4.y)
+        testing.addData('Mouse.leftButton', Mouse4.leftButton)
+        testing.addData('Mouse.midButton', Mouse4.midButton)
+        testing.addData('Mouse.rightButton', Mouse4.rightButton)
+        testing.addData('Mouse.time', Mouse4.time)
+        testing.addData('Mouse.clicked_name', Mouse4.clicked_name)
+        testing.addData('Mouse.started', Mouse4.tStart)
+        testing.addData('Mouse.stopped', Mouse4.tStop)
         # store data for testing (TrialHandler)
-        thisExp.addData('Mouse1.x', Mouse1.x)
-        thisExp.addData('Mouse1.y', Mouse1.y)
-        thisExp.addData('Mouse1.leftButton', Mouse1.leftButton)
-        thisExp.addData('Mouse1.midButton', Mouse1.midButton)
-        thisExp.addData('Mouse1.rightButton', Mouse1.rightButton)
-        thisExp.addData('Mouse1.time', Mouse1.time)
-        thisExp.addData('Mouse1.clicked_name', Mouse1.clicked_name)
-        thisExp.addData('Mouse1.started', Mouse1.tStart)
-        thisExp.addData('Mouse1.stopped', Mouse1.tStop)
+        testing.addData('Mouse1.x', Mouse1.x)
+        testing.addData('Mouse1.y', Mouse1.y)
+        testing.addData('Mouse1.leftButton', Mouse1.leftButton)
+        testing.addData('Mouse1.midButton', Mouse1.midButton)
+        testing.addData('Mouse1.rightButton', Mouse1.rightButton)
+        testing.addData('Mouse1.time', Mouse1.time)
+        testing.addData('Mouse1.clicked_name', Mouse1.clicked_name)
+        testing.addData('Mouse1.started', Mouse1.tStart)
+        testing.addData('Mouse1.stopped', Mouse1.tStop)
         # store data for testing (TrialHandler)
-        thisExp.addData('Mouse2.x', Mouse2.x)
-        thisExp.addData('Mouse2.y', Mouse2.y)
-        thisExp.addData('Mouse2.leftButton', Mouse2.leftButton)
-        thisExp.addData('Mouse2.midButton', Mouse2.midButton)
-        thisExp.addData('Mouse2.rightButton', Mouse2.rightButton)
-        thisExp.addData('Mouse2.time', Mouse2.time)
-        thisExp.addData('Mouse2.started', Mouse2.tStart)
-        thisExp.addData('Mouse2.stopped', Mouse2.tStop)
+        testing.addData('Mouse2.x', Mouse2.x)
+        testing.addData('Mouse2.y', Mouse2.y)
+        testing.addData('Mouse2.leftButton', Mouse2.leftButton)
+        testing.addData('Mouse2.midButton', Mouse2.midButton)
+        testing.addData('Mouse2.rightButton', Mouse2.rightButton)
+        testing.addData('Mouse2.time', Mouse2.time)
+        testing.addData('Mouse2.started', Mouse2.tStart)
+        testing.addData('Mouse2.stopped', Mouse2.tStop)
         order_var=order_var+1
         
         if looper==n_stims-1:
@@ -785,9 +781,8 @@ for thisRound in rounds:
     
 #saves data out in "final" file
 # these shouldn't be strictly necessary (should auto-save)
-#filename = _dataDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+'final'
-#thisExp.saveAsWideText(filename+'final')
-#thisExp.saveAsPickle(filename+'final')
+thisExp.saveAsWideText(filename+'_final')
+thisExp.saveAsPickle(filename+'_final')
 #logging.flush()
 # make sure everything is closed down
 thisExp.abort()  # or data files will save again on exit

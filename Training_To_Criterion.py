@@ -29,8 +29,6 @@ from psychopy.hardware import keyboard
 _dataDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/data"
 #where stimuli are read in from
 _thisDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/Files/stimuli/objects"
-#save psychopy data out to a seperate directory
-_psychPyData = "/Users/lehlert/Documents/PsychoPy/Tambini_2/data/psychoPyData"
 os.chdir(_thisDir)
 
 # Store info about the experiment session (saved in psychopy created file)
@@ -97,7 +95,7 @@ wait_time1=2
 #should be 3
 wait_time2=3
 #number of stimuli to be used per run of experiment 
-n_stims=4
+n_stims=18
 
 #create matrix three collumns, and one row per stimuli used
 rows=n_stims
@@ -448,14 +446,12 @@ for thisRound in rounds:
         for paramName in thisTrial:
             exec('{} = thisTrial[paramName]'.format(paramName))
        
-    
     #set up initial matrix during first round only
     if coordFlag == False:
         looper=0
         
         #create a list of random numbers between 1- #number of stims to use to generate the stim images for the experiment
         randStim=random.sample(range(1, 266), n_stims)
-        
         
         #on first run creates random locations for stims divided into four quadrants of the screen 
         #make n_stim divisable by 4
@@ -558,8 +554,8 @@ for thisRound in rounds:
         else:
             # ------Prepare to start Routine "Training"-------
             #adding data to psychopy file
-            thisExp.addData('xCoord', coord_x_list[looper])
-            thisExp.addData('yCoord', coord_y_list[looper])
+            training.addData('xCoord', coord_x_list[looper])
+            training.addData('yCoord', coord_y_list[looper])
             #set ran flag
             ranFlag=False
             #function that creates grid over screen based upon resolution input
@@ -792,17 +788,17 @@ for thisRound in rounds:
                 thisComponent.setAutoDraw(False)
                 
         if criterion_list[order_list[looper]]==False:
-            thisExp.addData('Outline_red_2.started', Outline_red_2.tStartRefresh)
-            thisExp.addData('Outline_red_2.stopped', Outline_red_2.tStopRefresh)
-            thisExp.addData('Outline_black_2.started', Outline_black_2.tStartRefresh)
-            thisExp.addData('Outline_black_2.stopped', Outline_black_2.tStopRefresh)
-            thisExp.addData('Stimuli_2.started', Stimuli_2.tStartRefresh)
-            thisExp.addData('Stimuli_2.stopped', Stimuli_2.tStopRefresh)
-            thisExp.addData('mouse.x', x)
-            thisExp.addData('mouse.y', y)
-            thisExp.addData('mouse.leftButton', buttons[0])
-            thisExp.addData('mouse.midButton', buttons[1])
-            thisExp.addData('mouse.rightButton', buttons[2])
+            training.addData('Outline_red_2.started', Outline_red_2.tStartRefresh)
+            training.addData('Outline_red_2.stopped', Outline_red_2.tStopRefresh)
+            training.addData('Outline_black_2.started', Outline_black_2.tStartRefresh)
+            training.addData('Outline_black_2.stopped', Outline_black_2.tStopRefresh)
+            training.addData('Stimuli_2.started', Stimuli_2.tStartRefresh)
+            training.addData('Stimuli_2.stopped', Stimuli_2.tStopRefresh)
+            training.addData('mouse.x', x)
+            training.addData('mouse.y', y)
+            training.addData('mouse.leftButton', buttons[0])
+            training.addData('mouse.midButton', buttons[1])
+            training.addData('mouse.rightButton', buttons[2])
             # store data for training (TrialHandler)
             x, y = Mouse3.getPos()
             buttons = Mouse3.getPressed()
@@ -816,8 +812,8 @@ for thisRound in rounds:
             
             if len(Mouse3.clicked_name):
                 thisExp.addData('mouse.clicked_name', Mouse3.clicked_name[0])
-            thisExp.addData('mouse.started', Mouse3.tStart)
-            thisExp.addData('mouse.stopped', Mouse3.tStop)
+            training.addData('mouse.started', Mouse3.tStart)
+            training.addData('mouse.stopped', Mouse3.tStop)
             # the Routine "Training" was not non-slip safe, so reset the non-slip timer
             order_var=order_var+1
             
@@ -840,7 +836,6 @@ for thisRound in rounds:
     #training.saveAsPickle(filename)
     
     # completed 1 repeats of 'training'
-    
     currentCol=currentCol+1
     #resize matrix 
     new_col = data_matrix.sum(1)[...,None] 
@@ -854,12 +849,6 @@ for thisRound in rounds:
     all_data = np.append(data_matrix, new_col, 1)
     all_data.shape
     data_matrix=all_data
-    #resize matrix 
-    #new_col = data_matrix.sum(1)[...,None] 
-    #new_col.shape
-    #all_data = np.append(data_matrix, new_col, 1)
-    #all_data.shape
-    #data_matrix=all_data
     
     # ------Prepare to start Routine "Test_Intro"-------
     # update component parameters for each repeat
@@ -963,6 +952,7 @@ for thisRound in rounds:
     win.mouseVisible = 1
     # the Routine "Test_Intro" was not non-slip safe, so reset the non-slip timer
     routineTimer.reset()
+
     
     # set up handler to look after randomisation of conditions etc
     testing = data.TrialHandler(nReps=n_stims, method='sequential', 
@@ -1000,15 +990,10 @@ for thisRound in rounds:
             #update component parameters for each repeat
             #hide the mouse
             win.mouseVisible=0
-            #Target.setImage('/Users/lehlert/Documents/PsychoPy/Tambini_2/Files/stimuli/objects/1a.jpg')
             Stimuli.setPos((0,0))
-            #Stimuli.setImage('/Users/lehlert/Documents/PsychoPy/Tambini_2/Files/stimuli/objects/1a.jpg')
             xCoord = []
             yCoord = []
-            #stimPos = []
-            #targetPos =[]
             order = []
-            #delay=15
             doneFlag=0
             # setup some python lists for storing info about the Mouse
             Mouse4.x = []
@@ -1182,36 +1167,6 @@ for thisRound in rounds:
                 Mouse1.midButton.append(buttons[1])
                 Mouse1.rightButton.append(buttons[2])
                 Mouse1.time.append(Mouse1.mouseClock.getTime())
-            # *Mouse2* updates
-            #if Mouse2.status == NOT_STARTED and doneFlag==1:
-                # keep track of start time/frame for later
-                #Mouse2.frameNStart = frameN  # exact frame index
-                #Mouse2.tStart = t  # local t and not account for scr refresh
-                #Mouse2.tStartRefresh = tThisFlipGlobal  # on global time
-                #win.timeOnFlip(Mouse2, 'tStartRefresh')  # time at next scr refresh
-                #Mouse2.status = STARTED
-                #Mouse2.mouseClock.reset()
-                #prevButtonState = Mouse2.getPressed()  # if button is down already this ISN'T a new click
-            #if Mouse2.status == STARTED:  # only update if started and not finished!
-                #x, y = Mouse2.getPos()
-                ##Mouse2.x.append(x)
-                #Mouse2.y.append(y)
-                #buttons = Mouse2.getPressed()
-                #Mouse2.leftButton.append(buttons[0])
-                #Mouse2.midButton.append(buttons[1])
-                #Mouse2.rightButton.append(buttons[2])
-                #Mouse2.time.append(Mouse2.mouseClock.getTime())
-                #buttons = Mouse2.getPressed()
-                #if buttons != prevButtonState:  # button state changed?
-                    #prevButtonState = buttons
-                    #if sum(buttons) > 0:  # state changed to a new click
-                        # abort routine on response
-                        #continueRoutine = False
-            #after a short pause allow user to use mouse to change stim position
-            #if delay > 0:
-            #delay=delay-1
-                #move mouse to center of the screen and reveal it
-            #set mouse to center and have it appear 
                 
             win.mouseVisible=1
                 #check if mouse is pressed and move stim with mouse
@@ -1301,50 +1256,50 @@ for thisRound in rounds:
                 thisComponent.setAutoDraw(False)
         if criterion_list[order_list[looper]]==False:
             #store other data in psychopy "final" file
-            thisExp.addData('xCoord', coord_x_list[order_list[looper]])
-            thisExp.addData('yCoord', coord_y_list[order_list[looper]])
-            thisExp.addData('Error', dist)
-            thisExp.addData('Outline_red.started', Outline_red.tStartRefresh)
-            thisExp.addData('Outline_red.stopped', Outline_red.tStopRefresh)
-            thisExp.addData('Outline_black.started', Outline_black.tStartRefresh)
-            thisExp.addData('Outline_black.stopped', Outline_black.tStopRefresh)
-            thisExp.addData('Outline_green.started', Outline_green.tStartRefresh)
-            thisExp.addData('Outline_green.stopped', Outline_green.tStopRefresh)
-            thisExp.addData('Outline_blue.started', Outline_blue.tStartRefresh)
-            thisExp.addData('Outline_blue.stopped', Outline_blue.tStopRefresh)
-            thisExp.addData('Target.started', Target.tStartRefresh)
-            thisExp.addData('Target.stopped', Target.tStopRefresh)
-            thisExp.addData('Stimuli.started', Stimuli.tStartRefresh)
-            thisExp.addData('Stimuli.stopped', Stimuli.tStopRefresh)
+            testing.addData('xCoord', coord_x_list[order_list[looper]])
+            testing.addData('yCoord', coord_y_list[order_list[looper]])
+            testing.addData('Error', dist)
+            testing.addData('Outline_red.started', Outline_red.tStartRefresh)
+            testing.addData('Outline_red.stopped', Outline_red.tStopRefresh)
+            testing.addData('Outline_black.started', Outline_black.tStartRefresh)
+            testing.addData('Outline_black.stopped', Outline_black.tStopRefresh)
+            testing.addData('Outline_green.started', Outline_green.tStartRefresh)
+            testing.addData('Outline_green.stopped', Outline_green.tStopRefresh)
+            testing.addData('Outline_blue.started', Outline_blue.tStartRefresh)
+            testing.addData('Outline_blue.stopped', Outline_blue.tStopRefresh)
+            testing.addData('Target.started', Target.tStartRefresh)
+            testing.addData('Target.stopped', Target.tStopRefresh)
+            testing.addData('Stimuli.started', Stimuli.tStartRefresh)
+            testing.addData('Stimuli.stopped', Stimuli.tStopRefresh)
             # store data for testing (TrialHandler)
-            thisExp.addData('Mouse.x', Mouse4.x)
-            thisExp.addData('Mouse.y', Mouse4.y)
-            thisExp.addData('Mouse.leftButton', Mouse4.leftButton)
-            thisExp.addData('Mouse.midButton', Mouse4.midButton)
-            thisExp.addData('Mouse.rightButton', Mouse4.rightButton)
-            thisExp.addData('Mouse.time', Mouse4.time)
-            thisExp.addData('Mouse.clicked_name', Mouse4.clicked_name)
-            thisExp.addData('Mouse.started', Mouse4.tStart)
-            thisExp.addData('Mouse.stopped', Mouse4.tStop)
+            testing.addData('Mouse.x', Mouse4.x)
+            testing.addData('Mouse.y', Mouse4.y)
+            testing.addData('Mouse.leftButton', Mouse4.leftButton)
+            testing.addData('Mouse.midButton', Mouse4.midButton)
+            testing.addData('Mouse.rightButton', Mouse4.rightButton)
+            testing.addData('Mouse.time', Mouse4.time)
+            testing.addData('Mouse.clicked_name', Mouse4.clicked_name)
+            testing.addData('Mouse.started', Mouse4.tStart)
+            testing.addData('Mouse.stopped', Mouse4.tStop)
             # store data for testing (TrialHandler)
-            thisExp.addData('Mouse1.x', Mouse1.x)
-            thisExp.addData('Mouse1.y', Mouse1.y)
-            thisExp.addData('Mouse1.leftButton', Mouse1.leftButton)
-            thisExp.addData('Mouse1.midButton', Mouse1.midButton)
-            thisExp.addData('Mouse1.rightButton', Mouse1.rightButton)
-            thisExp.addData('Mouse1.time', Mouse1.time)
-            thisExp.addData('Mouse1.clicked_name', Mouse1.clicked_name)
-            thisExp.addData('Mouse1.started', Mouse1.tStart)
-            thisExp.addData('Mouse1.stopped', Mouse1.tStop)
+            testing.addData('Mouse1.x', Mouse1.x)
+            testing.addData('Mouse1.y', Mouse1.y)
+            testing.addData('Mouse1.leftButton', Mouse1.leftButton)
+            testing.addData('Mouse1.midButton', Mouse1.midButton)
+            testing.addData('Mouse1.rightButton', Mouse1.rightButton)
+            testing.addData('Mouse1.time', Mouse1.time)
+            testing.addData('Mouse1.clicked_name', Mouse1.clicked_name)
+            testing.addData('Mouse1.started', Mouse1.tStart)
+            testing.addData('Mouse1.stopped', Mouse1.tStop)
             # store data for testing (TrialHandler)
-            thisExp.addData('Mouse2.x', Mouse2.x)
-            thisExp.addData('Mouse2.y', Mouse2.y)
-            thisExp.addData('Mouse2.leftButton', Mouse2.leftButton)
-            thisExp.addData('Mouse2.midButton', Mouse2.midButton)
-            thisExp.addData('Mouse2.rightButton', Mouse2.rightButton)
-            thisExp.addData('Mouse2.time', Mouse2.time)
-            thisExp.addData('Mouse2.started', Mouse2.tStart)
-            thisExp.addData('Mouse2.stopped', Mouse2.tStop)
+            testing.addData('Mouse2.x', Mouse2.x)
+            testing.addData('Mouse2.y', Mouse2.y)
+            testing.addData('Mouse2.leftButton', Mouse2.leftButton)
+            testing.addData('Mouse2.midButton', Mouse2.midButton)
+            testing.addData('Mouse2.rightButton', Mouse2.rightButton)
+            testing.addData('Mouse2.time', Mouse2.time)
+            testing.addData('Mouse2.started', Mouse2.tStart)
+            testing.addData('Mouse2.stopped', Mouse2.tStop)
             order_var=order_var+1
         
         if looper==n_stims-1:
@@ -1411,8 +1366,8 @@ for thisRound in rounds:
     
 #saves data out in "final" file
 # these shouldn't be strictly necessary (should auto-save)
-#filename = _dataDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])+'final'
-#thisExp.saveAsWideText(filename+'final')
+filename = _dataDir + os.sep + u'psychoPyData/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
+thisExp.saveAsWideText(filename+'final')
 #thisExp.saveAsPickle(filename+'final')
 logging.flush()
 # make sure everything is closed down
