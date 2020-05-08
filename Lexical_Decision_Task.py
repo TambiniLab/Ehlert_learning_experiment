@@ -55,7 +55,7 @@ thisExp = data.ExperimentHandler(name=expName, version='',
     savePickle=True, saveWideText=True,
     dataFileName=filename)
 # save a log file for detail verbose info
-logFile = logging.LogFile(filename+'.log', level=logging.EXP)
+#logFile = logging.LogFile(filename+'.log', level=logging.EXP)
 logging.console.setLevel(logging.WARNING)  # this outputs to the screen, not a file
 
 endExpNow = False  # flag for 'escape' or other condition => quit the exp
@@ -224,21 +224,10 @@ while looper < 32:
                 iti_timings[looper][3]=float('nan')
     looper=looper+1 
 
-#looper = 0
-#assign arrow directions 
-#while looper < 32:
-   #if looper==0:
-   #     iti_timings[looper][4] = 0
-   # elif looper%2==0:
-   #     iti_timings[looper][4] = 0
-   # else: 
-   #     iti_timings[looper][4] = 1
-   # looper=looper+1 
-
 #create an array with three permutations of the thirds set up above
 looper=0
 curRow=0
-order = np.zeros((96,5))
+order = np.zeros((96,4))
 
 #add data to order array for each third
 while looper <3:
@@ -248,12 +237,26 @@ while looper <3:
         order[curRow][0]=rows[0]
         order[curRow][1]=rows[1]
         order[curRow][2]=rows[2]
-        order[curRow][3]=rows[3]
         curRow=curRow+1
     looper=looper+1
-
-#save the order array out 
+    
+looper = 0
+#assign arrow directions 
+arrow_dir = []
+#save the order array out (this shows, itis col 1, w or pword col 2, reexpose col 3 and what stim is reexposed col 4)
 np.savetxt(filename+'_order_'+'.csv', order, delimiter=',',fmt='%.2f')
+
+#use random sample of balanced array to assign 0 or 1 for each arrow assingment 
+#make a list of lists
+while looper < 96:
+    arrow_choices = [0,0,0,0,1,1,1,1]
+    arrow_dir.append(random.sample(arrow_choices,  int(order[looper][0])))
+    looper=looper+1
+    
+#save out each list to a line of a csv file
+with open(filename+'_arrow_dir_'+'.csv', "w", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerows(arrow_dir)   
 
 #change to adjust sizes of grid and stims 
 #if after first run grid size etc... seems off check the console log it should output the proper resolution
@@ -348,7 +351,7 @@ routineTimer = core.CountdownTimer()  # to track time remaining of each (non-sli
 #data matrixes to save out
 w, h = 3, 96;
 w_or_p_save = [[0 for x in range(w)] for y in range(h)] 
-iti_w_or_p_save = [[]]
+iti_w_or_p_save = []
 words = []
 p_words = []
 
@@ -434,23 +437,27 @@ for thisTrial in trials:
         pword_iterator = 0
         ran_flag=True
     
-    #stores all words to be used in the experiment    
+    #stores all words to be used in the experiment in order in a new list 
     used_words_list = []
+    while looper < 96: 
+        if order[looper][1]==0:
+            used_words_list.append(str(words[word_iterator]))
+            w_or_p_save[looper][0]='w'
+            word_iterator = word_iterator+1
+        elif order[looper][1]==1:
+            used_words_list.append(str(p_words[pword_iterator]))
+            w_or_p_save[looper][0]='p'
+            pword_iterator = pword_iterator+1
+        looper=looper+1
+    #save out used word list
+    np.savetxt(filename+'_used_word_list_'+'.csv', used_words_list, delimiter=' ',fmt='%s')
+
     #while within one third display choose a timing from the matrix
     #if second collumn is 0 set to word, if seond collum is 1 set to pseudo word
     #uses a list to keep track if events have happened (balances displays of stims based upon word or pseudo word being displayed and the length of the reps)
     #displays the first time each of these things happens 
     reps = order[current][0]
-    if order[current][1]==0:
-        word_or_pseudo.setText(str(words[word_iterator]))
-        used_words_list.append(str(words[word_iterator]))
-        w_or_p_save[current][0]='w'
-        word_iterator = word_iterator+1
-    elif order[current][1]==1:
-        word_or_pseudo.setText(str(p_words[pword_iterator]))
-        used_words_list.append(str(p_words[pword_iterator]))
-        w_or_p_save[current][0]='p'
-        pword_iterator = pword_iterator+1
+    word_or_pseudo.setText(used_words_list[current])
     
     # reset timers
     t = 0
@@ -580,6 +587,8 @@ for thisTrial in trials:
     trials.addData('w_or_p.started', w_or_p.tStartRefresh)
     trials.addData('w_or_p.stopped', w_or_p.tStopRefresh)
     thisExp.nextEntry()
+    looper=0
+    tmp = []
     
     # set up handler to look after randomisation of conditions etc
     trials_2 = data.TrialHandler(nReps=reps, method='fullRandom', 
@@ -627,10 +636,12 @@ for thisTrial in trials:
             reexpo.setImage(_thisDir+'/'+str(int(use_list[int(order[current][3])]))+'a.jpg')
          
         #display the arrows based on order values in 5th collumn 
-        if order[current][4]==0:
+        if arrow_dir[current][looper]==0:
             arrowL.setAutoDraw(True)
+            tmp.append('w')
         else:
-            arrowR.setAutoDraw(True)   
+            arrowR.setAutoDraw(True)  
+            tmp.append('p')
         
         # -------Run Routine "ITI"-------
         while continueRoutine and routineTimer.getTime() > 0:
@@ -723,9 +734,18 @@ for thisTrial in trials:
         # check responses
         if w_or_p_iti.keys in ['', [], None]:  # No response was made
             w_or_p_iti.keys = None
+            tmp.append('None')
+        else:
+            tmp.append(w_or_p_iti.keys)
+            
         trials_2.addData('w_or_p_iti.keys',w_or_p_iti.keys)
+        
+        
         if w_or_p_iti.keys != None:  # we had a response
             trials_2.addData('w_or_p_iti.rt', w_or_p_iti.rt)
+            tmp.append(w_or_p_iti.rt)
+        else: 
+           tmp.append('None')
             
         trials_2.addData('reexpo.started', reexpo.tStartRefresh)
         trials_2.addData('reexpo.stopped', reexpo.tStopRefresh)
@@ -736,22 +756,26 @@ for thisTrial in trials:
         #when display flag is true, after reexposing stim set flag to false
         if display_flag==True and looper==reps-1:
             display_flag=False
-            
+    #append the list of responses and response times to the iti save list
+    iti_w_or_p_save.append(tmp)       
     # completed 5-8 repeats of 'trials_2' 
     #np.savetxt(filename+'_testing_'+ str(nRound)+'.csv', data_matrix, delimiter=',',fmt='%.2f')
 # completed 96 repeats of 'trials'
     current=current+1
+    looper=looper+1
 
 # Flip one final time so any remaining win.callOnFlip() 
 # and win.timeOnFlip() tasks get executed before quitting
 win.flip()
 
-np.savetxt(filename+'_used_word_list_'+'.csv', used_words_list, delimiter=' ',fmt='%s')
 # these shouldn't be strictly necessary (should auto-save)
 #save out the w or p responses for the trails
 np.savetxt(filename+'_trial_responses_'+'.csv', w_or_p_save, delimiter=',',fmt='%s')
 #save out the w or p responses for the iti
-np.savetxt(filename+'_iti_responses_'+'.csv', iti_w_or_p_save, delimiter=',',fmt='%s')
+#save out each list to a line of a csv file
+with open(filename+'_iti_responses_'+'.csv', "w", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerows(iti_w_or_p_save)   
 
 thisExp.saveAsWideText(filename+'final')
 #thisExp.saveAsPickle(filename+'final')
