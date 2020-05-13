@@ -26,9 +26,9 @@ from psychopy.hardware import keyboard
 #_thisDir = os.path.dirname(os.path.abspath(__file__))
 
 #where output data is saved
-_dataDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/data"
+_dataDir = "Files/data" 
 #where stimuli are read in from
-_thisDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/Files/stimuli/objects"
+_thisDir = "Files/stimuli/objects"
 os.chdir(_thisDir)
 
 # Store info about the experiment session (saved in psychopy created file)
@@ -1366,7 +1366,6 @@ for thisRound in rounds:
     
 #saves data out in "final" file
 # these shouldn't be strictly necessary (should auto-save)
-filename = _dataDir + os.sep + u'psychoPyData/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
 thisExp.saveAsWideText(filename+'final')
 #thisExp.saveAsPickle(filename+'final')
 logging.flush()

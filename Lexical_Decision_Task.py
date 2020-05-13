@@ -18,7 +18,6 @@ import random
 
 #!/usr/bin/env python
 import csv
-
 import os, os.path  # handy system and path functions
 import sys  # to get file system encoding
 import fnmatch #to grab the file we need
@@ -26,13 +25,11 @@ import fnmatch #to grab the file we need
 from psychopy.hardware import keyboard
 
 #where output data is saved
-_dataDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/data"
+_dataDir = "Files/data" 
 #where stimuli are read in from
-_thisDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/Files/stimuli/objects"
-_textDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/Files/text"
-_scramDir = "/Users/lehlert/Documents/PsychoPy/Tambini_2/Files/scramObj"
-#save psychopy data out to a seperate directory
-_psychPyData = "/Users/lehlert/Documents/PsychoPy/Tambini_2/data/psychoPyData"
+_thisDir = "Files/stimuli/objects"
+_textDir = "Files/text"
+_scramDir = "Files/scramObj"
 
 # Store info about the experiment session
 psychopyVersion = '3.2.4'
@@ -57,7 +54,6 @@ thisExp = data.ExperimentHandler(name=expName, version='',
 # save a log file for detail verbose info
 #logFile = logging.LogFile(filename+'.log', level=logging.EXP)
 logging.console.setLevel(logging.WARNING)  # this outputs to the screen, not a file
-
 endExpNow = False  # flag for 'escape' or other condition => quit the exp
 frameTolerance = 0.001  # how close to onset before 'same' frame
 final_files=0
@@ -68,7 +64,6 @@ error_list=[]
 stim_choice=0
 #starts at false
 display_flag=False
-
 
 #this function takes the file name you are looking for an number you want and if it finds it it returns the number of rows in the file       
 def count_rows(looking_for,this):
@@ -126,10 +121,9 @@ use_these = random.sample(range(0, rows-1), (int((rows-2)/2)))
 #add the random 8 to a new list    
 for num in use_these:
    use_list.append(stim_list[num])   
-   
+
 #choose timings for each iti
 iti_timings = np.zeros((32,4))
-looper=0
 
 # matrix that hold parameters for how experiment should run, first created and then shuffled to make pseudo random 
 # col 1 - iti reps 5-8, col 2 - 0 word, 1 pseudo word, col 3 - 0 reexpose, 1 do nothing
@@ -137,11 +131,10 @@ looper=0
 #8 of each iti timing 
 #within each 8 1/2 are word and 1/2 are pseudoword 
 #first word and pseudo word of each 8 is a reexpose so 8 reexposed throughout 
-#
-
+x=0
+looper=0
+reexpo_choice = random.sample(range(0,8), 8)
 while looper < 32:
-    x=0
-    reexpo_choice = random.sample(range(0,8), 8)
     if looper < 8:
         iti_timings[looper][0]=5
         if looper < 4:
@@ -237,6 +230,7 @@ while looper <3:
         order[curRow][0]=rows[0]
         order[curRow][1]=rows[1]
         order[curRow][2]=rows[2]
+        order[curRow][3]=rows[3]
         curRow=curRow+1
     looper=looper+1
     
@@ -252,6 +246,8 @@ while looper < 96:
     arrow_choices = [0,0,0,0,1,1,1,1]
     arrow_dir.append(random.sample(arrow_choices,  int(order[looper][0])))
     looper=looper+1
+
+looper=0
     
 #save out each list to a line of a csv file
 with open(filename+'_arrow_dir_'+'.csv', "w", newline="") as f:
@@ -347,13 +343,69 @@ arrowR = visual.ShapeStim(win,
 # Create some handy timers
 globalClock = core.Clock()  # to track the time since experiment started
 routineTimer = core.CountdownTimer()  # to track time remaining of each (non-slip) routine 
-
+#np.savetxt(filename+'_testing_'+ str(nRound)+'.csv', data_matrix, delimiter=',',fmt='%.2f')
 #data matrixes to save out
 w, h = 3, 96;
 w_or_p_save = [[0 for x in range(w)] for y in range(h)] 
 iti_w_or_p_save = []
 words = []
 p_words = []
+word_list =[]
+pword_list =[]
+#find the word list file and import the words into a list
+
+with open(_textDir+"/"+"word_list.csv", "r") as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter=',')
+    for lines in csv_reader:
+            word_list.append(str(lines))
+        
+#find pword list text file and add it to a list 
+with open(_textDir+"/"+"pword_list.csv", "r") as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter=',')
+    for lines in csv_reader:
+            pword_list.append(str(lines))       
+
+#mac a sample of integers to access the word list 
+random.seed()
+wlist_choice = random.sample(range(0, 99), 99)
+plist_choice = random.sample(range(0, 84), 84)
+
+#choose a scramble image to display
+scramble_choice = random.sample(range(1,97), 96)
+scramble.setImage(_scramDir+'/ScramObj'+str(scramble_choice[looper])+'.jpg')
+
+#add word or pseudo word to appropriate lists 
+while looper < 48:
+    #strip quotes and extra characters
+    #add to lists
+    p_words.append(str(pword_list[plist_choice[looper]].strip("['']")))
+    words.append(str(word_list[wlist_choice[looper]].strip("['']")))
+    looper=looper+1
+#reset looper and save out word and pword list files of those used 
+np.savetxt(filename+'_pword_list'+'.csv', p_words, delimiter=' ',fmt='%s')
+np.savetxt(filename+'_word_list_'+'.csv', words, delimiter=' ',fmt='%s')
+current = 0
+cur_Col=0
+word_iterator = 0
+pword_iterator = 0
+looper=0
+
+#stores all words to be used in the experiment in order in a new list 
+used_words_list = []
+while looper < 96: 
+    if order[looper][1]==0:
+        used_words_list.append(str(words[word_iterator]))
+        w_or_p_save[looper][0]='w'
+        word_iterator = word_iterator+1
+    elif order[looper][1]==1:
+        used_words_list.append(str(p_words[pword_iterator]))
+        w_or_p_save[looper][0]='p'
+        pword_iterator = pword_iterator+1
+    looper=looper+1
+looper=0
+tmp = []
+#save out used word list
+np.savetxt(filename+'_used_word_list_'+'.csv', used_words_list, delimiter=' ',fmt='%s')
 
 # set up handler to look after randomisation of conditions etc
 trials = data.TrialHandler(nReps=96, method='sequential', 
@@ -366,8 +418,6 @@ thisTrial = trials.trialList[0]  # so we can initialise stimuli with some values
 if thisTrial != None:
     for paramName in thisTrial:
         exec('{} = thisTrial[paramName]'.format(paramName))
-looper=0
-ran_flag=False
 
 for thisTrial in trials:
     currentLoop = trials
@@ -376,6 +426,202 @@ for thisTrial in trials:
         for paramName in thisTrial:
             exec('{} = thisTrial[paramName]'.format(paramName))
     
+    #while within one third display choose a timing from the matrix
+    #if second collumn is 0 set to word, if seond collum is 1 set to pseudo word
+    #uses a list to keep track if events have happened (balances displays of stims based upon word or pseudo word being displayed and the length of the reps)
+    #displays the first time each of these things happens 
+    reps = order[current][0]
+    word_or_pseudo.setText(used_words_list[current])
+    
+    # set up handler to look after randomisation of conditions etc
+    trials_2 = data.TrialHandler(nReps=reps, method='fullRandom', 
+        extraInfo=expInfo, originPath=-1,
+        trialList=[None],
+        seed=None, name='trials_2')
+    thisExp.addLoop(trials_2)  # add the loop to the experiment
+    thisTrial_2 = trials_2.trialList[0]  # so we can initialise stimuli with some values
+    # abbreviate parameter names if possible (e.g. rgb = thisTrial_2.rgb)
+    if thisTrial_2 != None:
+        for paramName in thisTrial_2:
+            exec('{} = thisTrial_2[paramName]'.format(paramName))
+    
+    for thisTrial_2 in trials_2:
+        currentLoop = trials_2
+        # abbreviate parameter names if possible (e.g. rgb = thisTrial_2.rgb)
+        if thisTrial_2 != None:
+            for paramName in thisTrial_2:
+                exec('{} = thisTrial_2[paramName]'.format(paramName))
+        
+        # ------Prepare to start Routine "ITI"-------
+        routineTimer.add(2.5)
+        # update component parameters for each repeat
+        w_or_p_iti.keys = []
+        w_or_p_iti.rt = []
+        # keep track of which components have finished
+        ITIComponents = [reexpo, w_or_p_iti, arrowL, arrowR]
+        for thisComponent in ITIComponents:
+            thisComponent.tStart = None
+            thisComponent.tStop = None
+            thisComponent.tStartRefresh = None
+            thisComponent.tStopRefresh = None
+            if hasattr(thisComponent, 'status'):
+                thisComponent.status = NOT_STARTED
+        # reset timers
+        t = 0
+        _timeToFirstFrame = win.getFutureFlipTime(clock="now")
+        ITIClock.reset(-_timeToFirstFrame)  # t0 is time of first possible flip
+        frameN = -1
+        continueRoutine = True
+        
+        #set display flag to true when we should reexpose and set the stim to correct image
+        if order[current][2]==0:
+            display_flag=True 
+            reexpo.setImage(_thisDir+'/'+str(int(use_list[int(order[current][3])]))+'a.jpg')
+        
+        #display the arrows based on order values in 5th collumn
+        if arrow_dir[current][looper]==0:
+            arrow = arrowL
+            tmp.append('w')
+        else:
+            arrow = arrowR
+            tmp.append('p')
+        
+        # -------Run Routine "ITI"-------
+        while continueRoutine and routineTimer.getTime() > 0:
+            # get current time
+            t = ITIClock.getTime()
+            tThisFlip = win.getFutureFlipTime(clock=ITIClock)
+            tThisFlipGlobal = win.getFutureFlipTime(clock=None)
+            frameN = frameN + 1  # number of completed frames (so 0 is the first frame)
+            # update/draw components on each frame
+            
+            # *w_or_p_iti* updates
+            waitOnFlip = False
+            
+            # *reexpo* updates
+            #only displays right before the next word or pseudoword is displayed, and if the display flag is set 
+            if reexpo.status == NOT_STARTED and tThisFlip >= 2-frameTolerance and display_flag == True and looper==reps-1:
+                # keep track of start time/frame for later
+                reexpo.frameNStart = frameN  # exact frame index
+                reexpo.tStart = t  # local t and not account for scr refresh
+                reexpo.tStartRefresh = tThisFlipGlobal  # on global time
+                win.timeOnFlip(reexpo, 'tStartRefresh')  # time at next scr refresh
+                reexpo.setAutoDraw(True)
+                
+            if reexpo.status == STARTED:
+                # is it time to stop? (based on global clock, using actual start)
+                if tThisFlipGlobal > reexpo.tStartRefresh + 2.005-frameTolerance:
+                    # keep track of stop time/frame for later
+                    reexpo.tStop = t  # not accounting for scr refresh
+                    reexpo.frameNStop = frameN  # exact frame index
+                    win.timeOnFlip(reexpo, 'tStopRefresh')  # time at next scr refresh
+                    reexpo.setAutoDraw(False)
+                    
+            # *reexpo* updates
+            #only displays right before the next word or pseudoword is displayed, and if the display flag is set 
+            if arrow.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
+                # keep track of start time/frame for later
+                arrow.frameNStart = frameN  # exact frame index
+                arrow.tStart = t  # local t and not account for scr refresh
+                arrow.tStartRefresh = tThisFlipGlobal  # on global time
+                win.timeOnFlip(arrow, 'tStartRefresh')  # time at next scr refresh
+                arrow.setAutoDraw(True)
+                
+            if arrow.status == STARTED:
+                # is it time to stop? (based on global clock, using actual start)
+                if tThisFlipGlobal > arrow.tStartRefresh + 2.000-frameTolerance:
+                    arrow.setAutoDraw(False)
+                elif tThisFlipGlobal > arrow.tStartRefresh + 2.5-frameTolerance:
+                    # keep track of stop time/frame for later
+                    arrow.tStop = t  # not accounting for scr refresh
+                    arrow.frameNStop = frameN  # exact frame index
+                    win.timeOnFlip(arrow, 'tStopRefresh')  # time at next scr refresh
+                
+            if w_or_p_iti.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
+                # keep track of start time/frame for later
+                w_or_p_iti.frameNStart = frameN  # exact frame index
+                w_or_p_iti.tStart = t  # local t and not account for scr refresh
+                w_or_p_iti.tStartRefresh = tThisFlipGlobal  # on global time
+                win.timeOnFlip(w_or_p_iti, 'tStartRefresh')  # time at next scr refresh
+                w_or_p_iti.status = STARTED
+                # keyboard checking is just starting
+                waitOnFlip = True
+                win.callOnFlip(w_or_p_iti.clock.reset)  # t=0 on next screen flip
+                win.callOnFlip(w_or_p_iti.clearEvents, eventType='keyboard')  # clear events on next screen flip
+            if w_or_p_iti.status == STARTED:
+                # is it time to stop? (based on global clock, using actual start)
+                if tThisFlipGlobal > w_or_p_iti.tStartRefresh + 2-frameTolerance:
+                    # keep track of stop time/frame for later
+                    w_or_p_iti.tStop = t  # not accounting for scr refresh
+                    w_or_p_iti.frameNStop = frameN  # exact frame index
+                    win.timeOnFlip(w_or_p_iti, 'tStopRefresh')  # time at next scr refresh
+                    w_or_p_iti.status = FINISHED
+            if w_or_p_iti.status == STARTED and not waitOnFlip:
+                theseKeys = w_or_p_iti.getKeys(keyList=['w', 'p'], waitRelease=False)
+                if len(theseKeys):
+                    theseKeys = theseKeys[0]  # at least one key was pressed
+                    
+                    # check for quit:
+                    if "escape" == theseKeys:
+                        endExpNow = True
+                    w_or_p_iti.keys = theseKeys.name  # just the last key pressed
+                    w_or_p_iti.rt = theseKeys.rt
+                    # a response ends the routine
+                    #continueRoutine = False
+            
+            # check for quit (typically the Esc key)
+            if endExpNow or defaultKeyboard.getKeys(keyList=["escape"]):
+                core.quit()
+            
+            # check if all components have finished
+            if not continueRoutine:  # a component has requested a forced-end of Routine
+                break
+            continueRoutine = False  # will revert to True if at least one component still running
+            for thisComponent in ITIComponents:
+                if hasattr(thisComponent, "status") and thisComponent.status != FINISHED:
+                    continueRoutine = True
+                    break  # at least one component has not yet finished
+            
+            # refresh the screen
+            if continueRoutine:  # don't flip if this routine is over or we'll get a blank screen
+                win.flip()
+        
+        # -------Ending Routine "ITI"-------
+        for thisComponent in ITIComponents:
+            if hasattr(thisComponent, "setAutoDraw"):
+                thisComponent.setAutoDraw(False)
+        arrowL.setAutoDraw(False)
+        arrowR.setAutoDraw(False)   
+        looper=looper+1
+        
+        # check responses
+        if w_or_p_iti.keys in ['', [], None]:  # No response was made
+            w_or_p_iti.keys = None
+            tmp.append('None')
+        else:
+            tmp.append(w_or_p_iti.keys)
+            
+        trials_2.addData('w_or_p_iti.keys',w_or_p_iti.keys)
+        
+        
+        if w_or_p_iti.keys != None:  # we had a response
+            trials_2.addData('w_or_p_iti.rt', w_or_p_iti.rt)
+            tmp.append(w_or_p_iti.rt)
+        else: 
+           tmp.append('None')
+            
+        trials_2.addData('reexpo.started', reexpo.tStartRefresh)
+        trials_2.addData('reexpo.stopped', reexpo.tStopRefresh)
+        trials_2.addData('w_or_p_iti.started', w_or_p_iti.tStartRefresh)
+        trials_2.addData('w_or_p_iti.stopped', w_or_p_iti.tStopRefresh)
+        thisExp.nextEntry()
+       
+        #when display flag is true, after reexposing stim set flag to false
+        if display_flag==True and looper==reps-1:
+            display_flag=False
+        #append the list of responses and response times to the iti save list
+        iti_w_or_p_save.append(tmp)     
+        
     # ------Prepare to start Routine "trial"-------
     routineTimer.add(2.000000)
     # update component parameters for each repeat
@@ -391,81 +637,14 @@ for thisTrial in trials:
         if hasattr(thisComponent, 'status'):
             thisComponent.status = NOT_STARTED
     
-    word_list =[]
-    pword_list =[]
-    #find the word list file and import the words into a list
-    
-    with open(_textDir+"/"+"word_list.csv", "r") as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        for lines in csv_reader:
-                word_list.append(str(lines))
-                
-    #find pword list text file and add it to a list 
-    with open(_textDir+"/"+"pword_list.csv", "r") as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        for lines in csv_reader:
-                pword_list.append(str(lines))       
-    
-    #mac a sample of integers to access the word list 
-    random.seed()
-    wlist_choice = random.sample(range(0, 99), 99)
-    plist_choice = random.sample(range(0, 84), 84)
-    
-    #choose a scramble image to display
-    scramble_choice = random.sample(range(1,97), 96)
-    scramble.setImage(_scramDir+'/ScramObj'+str(scramble_choice[looper])+'.jpg')
-    looper = 0 
-    #add word or pseudo word to appropriate lists 
-    while looper < 48:
-        #strip quotes and extra characters
-        #add to lists
-        p_words.append(str(pword_list[plist_choice[looper]].strip("['']")))
-        words.append(str(word_list[wlist_choice[looper]].strip("['']")))
-        looper=looper+1
-    
-    
-    #reset looper and save out word and pword list files of those used 
-    looper=0
-    np.savetxt(filename+'_pword_list'+'.csv', p_words, delimiter=' ',fmt='%s')
-    np.savetxt(filename+'_word_list_'+'.csv', words, delimiter=' ',fmt='%s')
-   
-    #set the variables to 0 before first run only
-    if ran_flag==False:
-        current = 0
-        cur_Col=0
-        word_iterator = 0
-        pword_iterator = 0
-        ran_flag=True
-    
-    #stores all words to be used in the experiment in order in a new list 
-    used_words_list = []
-    while looper < 96: 
-        if order[looper][1]==0:
-            used_words_list.append(str(words[word_iterator]))
-            w_or_p_save[looper][0]='w'
-            word_iterator = word_iterator+1
-        elif order[looper][1]==1:
-            used_words_list.append(str(p_words[pword_iterator]))
-            w_or_p_save[looper][0]='p'
-            pword_iterator = pword_iterator+1
-        looper=looper+1
-    #save out used word list
-    np.savetxt(filename+'_used_word_list_'+'.csv', used_words_list, delimiter=' ',fmt='%s')
-
-    #while within one third display choose a timing from the matrix
-    #if second collumn is 0 set to word, if seond collum is 1 set to pseudo word
-    #uses a list to keep track if events have happened (balances displays of stims based upon word or pseudo word being displayed and the length of the reps)
-    #displays the first time each of these things happens 
-    reps = order[current][0]
-    word_or_pseudo.setText(used_words_list[current])
-    
     # reset timers
     t = 0
     _timeToFirstFrame = win.getFutureFlipTime(clock="now")
     trialClock.reset(-_timeToFirstFrame)  # t0 is time of first possible flip
     frameN = -1
-    continueRoutine = True
-    
+    continueRoutine = True 
+    looper=0
+    # completed 5-8 repeats of 'trials_2' 
     # -------Run Routine "trial"-------
     while continueRoutine and routineTimer.getTime() > 0:
         # get current time
@@ -587,182 +766,8 @@ for thisTrial in trials:
     trials.addData('w_or_p.started', w_or_p.tStartRefresh)
     trials.addData('w_or_p.stopped', w_or_p.tStopRefresh)
     thisExp.nextEntry()
-    looper=0
-    tmp = []
-    
-    # set up handler to look after randomisation of conditions etc
-    trials_2 = data.TrialHandler(nReps=reps, method='fullRandom', 
-        extraInfo=expInfo, originPath=-1,
-        trialList=[None],
-        seed=None, name='trials_2')
-    thisExp.addLoop(trials_2)  # add the loop to the experiment
-    thisTrial_2 = trials_2.trialList[0]  # so we can initialise stimuli with some values
-    # abbreviate parameter names if possible (e.g. rgb = thisTrial_2.rgb)
-    if thisTrial_2 != None:
-        for paramName in thisTrial_2:
-            exec('{} = thisTrial_2[paramName]'.format(paramName))
-    
-    for thisTrial_2 in trials_2:
-        currentLoop = trials_2
-        # abbreviate parameter names if possible (e.g. rgb = thisTrial_2.rgb)
-        if thisTrial_2 != None:
-            for paramName in thisTrial_2:
-                exec('{} = thisTrial_2[paramName]'.format(paramName))
-        
-        # ------Prepare to start Routine "ITI"-------
-        routineTimer.add(2.005)
-        # update component parameters for each repeat
-        w_or_p_iti.keys = []
-        w_or_p_iti.rt = []
-        # keep track of which components have finished
-        ITIComponents = [reexpo, w_or_p_iti, arrowL, arrowR]
-        for thisComponent in ITIComponents:
-            thisComponent.tStart = None
-            thisComponent.tStop = None
-            thisComponent.tStartRefresh = None
-            thisComponent.tStopRefresh = None
-            if hasattr(thisComponent, 'status'):
-                thisComponent.status = NOT_STARTED
-        # reset timers
-        t = 0
-        _timeToFirstFrame = win.getFutureFlipTime(clock="now")
-        ITIClock.reset(-_timeToFirstFrame)  # t0 is time of first possible flip
-        frameN = -1
-        continueRoutine = True
-        
-        #set display flag to true when we should reexpose and set the stim to correct image
-        if order[current][2]==0:
-            display_flag=True 
-            reexpo.setImage(_thisDir+'/'+str(int(use_list[int(order[current][3])]))+'a.jpg')
-         
-        #display the arrows based on order values in 5th collumn 
-        if arrow_dir[current][looper]==0:
-            arrowL.setAutoDraw(True)
-            tmp.append('w')
-        else:
-            arrowR.setAutoDraw(True)  
-            tmp.append('p')
-        
-        # -------Run Routine "ITI"-------
-        while continueRoutine and routineTimer.getTime() > 0:
-            # get current time
-            t = ITIClock.getTime()
-            tThisFlip = win.getFutureFlipTime(clock=ITIClock)
-            tThisFlipGlobal = win.getFutureFlipTime(clock=None)
-            frameN = frameN + 1  # number of completed frames (so 0 is the first frame)
-            # update/draw components on each frame
-            
-            # *w_or_p_iti* updates
-            waitOnFlip = False
-            
-            # *reexpo* updates
-            #only displays right before the next word or pseudoword is displayed, and if the display flag is set 
-            if reexpo.status == NOT_STARTED and tThisFlip >= 2-frameTolerance and display_flag == True and looper==reps-1:
-                # keep track of start time/frame for later
-                reexpo.frameNStart = frameN  # exact frame index
-                reexpo.tStart = t  # local t and not account for scr refresh
-                reexpo.tStartRefresh = tThisFlipGlobal  # on global time
-                win.timeOnFlip(reexpo, 'tStartRefresh')  # time at next scr refresh
-                reexpo.setAutoDraw(True)
-                
-            if reexpo.status == STARTED:
-                # is it time to stop? (based on global clock, using actual start)
-                if tThisFlipGlobal > reexpo.tStartRefresh + 2.005-frameTolerance:
-                    # keep track of stop time/frame for later
-                    reexpo.tStop = t  # not accounting for scr refresh
-                    reexpo.frameNStop = frameN  # exact frame index
-                    win.timeOnFlip(reexpo, 'tStopRefresh')  # time at next scr refresh
-                    reexpo.setAutoDraw(False)
-                
-            if w_or_p_iti.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
-                # keep track of start time/frame for later
-                w_or_p_iti.frameNStart = frameN  # exact frame index
-                w_or_p_iti.tStart = t  # local t and not account for scr refresh
-                w_or_p_iti.tStartRefresh = tThisFlipGlobal  # on global time
-                win.timeOnFlip(w_or_p_iti, 'tStartRefresh')  # time at next scr refresh
-                w_or_p_iti.status = STARTED
-                # keyboard checking is just starting
-                waitOnFlip = True
-                win.callOnFlip(w_or_p_iti.clock.reset)  # t=0 on next screen flip
-                win.callOnFlip(w_or_p_iti.clearEvents, eventType='keyboard')  # clear events on next screen flip
-            if w_or_p_iti.status == STARTED:
-                # is it time to stop? (based on global clock, using actual start)
-                if tThisFlipGlobal > w_or_p_iti.tStartRefresh + 2-frameTolerance:
-                    # keep track of stop time/frame for later
-                    w_or_p_iti.tStop = t  # not accounting for scr refresh
-                    w_or_p_iti.frameNStop = frameN  # exact frame index
-                    win.timeOnFlip(w_or_p_iti, 'tStopRefresh')  # time at next scr refresh
-                    w_or_p_iti.status = FINISHED
-            if w_or_p_iti.status == STARTED and not waitOnFlip:
-                theseKeys = w_or_p_iti.getKeys(keyList=['w', 'p'], waitRelease=False)
-                if len(theseKeys):
-                    theseKeys = theseKeys[0]  # at least one key was pressed
-                    
-                    # check for quit:
-                    if "escape" == theseKeys:
-                        endExpNow = True
-                    w_or_p_iti.keys = theseKeys.name  # just the last key pressed
-                    w_or_p_iti.rt = theseKeys.rt
-                    # a response ends the routine
-                    #continueRoutine = False
-            
-            # check for quit (typically the Esc key)
-            if endExpNow or defaultKeyboard.getKeys(keyList=["escape"]):
-                core.quit()
-            
-            # check if all components have finished
-            if not continueRoutine:  # a component has requested a forced-end of Routine
-                break
-            continueRoutine = False  # will revert to True if at least one component still running
-            for thisComponent in ITIComponents:
-                if hasattr(thisComponent, "status") and thisComponent.status != FINISHED:
-                    continueRoutine = True
-                    break  # at least one component has not yet finished
-            
-            # refresh the screen
-            if continueRoutine:  # don't flip if this routine is over or we'll get a blank screen
-                win.flip()
-        
-        # -------Ending Routine "ITI"-------
-        for thisComponent in ITIComponents:
-            if hasattr(thisComponent, "setAutoDraw"):
-                thisComponent.setAutoDraw(False)
-        arrowL.setAutoDraw(False)
-        arrowR.setAutoDraw(False)   
-        looper=looper+1
-        
-        # check responses
-        if w_or_p_iti.keys in ['', [], None]:  # No response was made
-            w_or_p_iti.keys = None
-            tmp.append('None')
-        else:
-            tmp.append(w_or_p_iti.keys)
-            
-        trials_2.addData('w_or_p_iti.keys',w_or_p_iti.keys)
-        
-        
-        if w_or_p_iti.keys != None:  # we had a response
-            trials_2.addData('w_or_p_iti.rt', w_or_p_iti.rt)
-            tmp.append(w_or_p_iti.rt)
-        else: 
-           tmp.append('None')
-            
-        trials_2.addData('reexpo.started', reexpo.tStartRefresh)
-        trials_2.addData('reexpo.stopped', reexpo.tStopRefresh)
-        trials_2.addData('w_or_p_iti.started', w_or_p_iti.tStartRefresh)
-        trials_2.addData('w_or_p_iti.stopped', w_or_p_iti.tStopRefresh)
-        thisExp.nextEntry()
-   
-        #when display flag is true, after reexposing stim set flag to false
-        if display_flag==True and looper==reps-1:
-            display_flag=False
-    #append the list of responses and response times to the iti save list
-    iti_w_or_p_save.append(tmp)       
-    # completed 5-8 repeats of 'trials_2' 
-    #np.savetxt(filename+'_testing_'+ str(nRound)+'.csv', data_matrix, delimiter=',',fmt='%.2f')
 # completed 96 repeats of 'trials'
     current=current+1
-    looper=looper+1
 
 # Flip one final time so any remaining win.callOnFlip() 
 # and win.timeOnFlip() tasks get executed before quitting
