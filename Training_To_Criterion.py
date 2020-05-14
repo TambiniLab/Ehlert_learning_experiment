@@ -3,7 +3,7 @@ from __future__ import absolute_import, division
 
 from psychopy import locale_setup
 from psychopy import prefs
-from psychopy import sound, gui, visual, monitors, core, data, event, logging, clock
+from psychopy import gui, visual, monitors, core, data, event, logging, clock
 prefs.hardware['audioLib'] = ['PTB']
 from psychopy.constants import (NOT_STARTED, STARTED, PLAYING, PAUSED,
                                 STOPPED, FINISHED, PRESSED, RELEASED, FOREVER)
